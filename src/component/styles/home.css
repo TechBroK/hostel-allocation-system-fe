@@ -1,0 +1,217 @@
+.home {
+  min-height: 100vh;
+}
+
+.hero {
+  height: 83vh;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+              url('../../assets/images/hostel1.jpg');
+  background-size: contain;
+  background-position:left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+   animation: fadeIn 1.3s ease-in-out;
+}
+
+.hero-content {
+  max-width: 700px;
+  padding: 1rem;
+  animation: fadeIn 4s ease-in;
+}
+
+.hero-content h1 {
+  font-size: 3.3rem;
+  margin-bottom: 2rem;
+}
+
+.hero-content p {
+  font-size: 1.6rem;
+  margin-bottom: 2rem;
+}
+
+.cta-button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  background-color: #2b8aca;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.cta-button:hover {
+  transform: scale(1.05);
+}
+
+.features {
+  padding: 4rem 2rem;
+  background-color: #f8f9fa;
+}
+
+.features h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+    color: #2c3e50;
+    font-size: 40px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px #3498db;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+    box-shadow: 0 6px 12px rgba(241, 92, 92, 0.2);
+}
+
+.feature-card i {
+  font-size: 3rem;
+  color: #3498db;
+  margin-bottom: 1rem;
+}
+
+.feature-icon {
+  width: 69px;
+  height: 64px;
+  margin-bottom: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.benefit-card:hover .feature-icon {
+  transform: scale(1.1);
+}
+
+.hostels-preview {
+  padding: 4rem 2rem;
+}
+
+.hostels-preview h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.hostel-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hostel-card {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.hostel-card:hover {
+  transform: translateY(-10px);
+}
+
+.hostel-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.hostel-card h3,
+.hostel-card p {
+  padding: 1rem;
+  margin: 0;
+}
+
+.why-choose-us {
+  padding: 4rem 2rem;
+  background-color: #f8f9fa;
+}
+
+.why-choose-us h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #2c3e50;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.benefit-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-10px);
+}
+
+.benefit-card i {
+  font-size: 3rem;
+  color: #3498db;
+  margin-bottom: 1rem;
+}
+
+.benefit-card h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.benefit-card p {
+  color: #666;
+  line-height: 1.6;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+  
+  .hero-content p {
+    font-size: 1.2rem;
+  }
+  
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .benefit-card {
+    padding: 1.5rem;
+  }
+}
