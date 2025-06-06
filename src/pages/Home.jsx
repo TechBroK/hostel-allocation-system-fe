@@ -1,9 +1,8 @@
-import React from 'react';
-
 import '../component/styles/home.css';
 import hostelImage1 from '../assets/images/hostel1.jpg';
-// import hostelImage2 from '../assets/images/hostel2.jpg';
-// import hostelImage3 from '../assets/images/hostel3.jpg';
+import hostelImage2 from '../assets/images/hostel2.jpg';
+import hostelImage3 from '../assets/images/hostel3.jpg';
+import { Link } from 'react-router-dom';
 
 const Home = () => {
   return (
@@ -11,8 +10,10 @@ const Home = () => {
       <section className="hero">
         <div className="hero-content">
           <h1>Welcome to Our Hostel Allocation System</h1>
-          <p>Find and secure your perfect campus accommodation</p>
-          <button className="cta-button">Get Started</button>
+          <p>Find and secure your perfect campus accommodation.</p>
+          <Link to='/register'>
+          <button className="cta-button">Get Started</button>          
+          </Link>
         </div>
       </section>
 
@@ -26,8 +27,8 @@ const Home = () => {
           </div>
           <div className="feature-card">
             <i className='bx bxs-user-detail'></i>
-            <h3>Room Selection</h3>
-            <p>Choose from various room types and locations</p>
+            <h3>View User Details</h3>
+            <p>Know about your roommate before even meeting them</p>
           </div>
           <div className="feature-card">
             <i className='bx bxs-check-shield'></i>
@@ -47,17 +48,17 @@ const Home = () => {
         <div className="hostel-cards">
           <div className="hostel-card">
             <img src={hostelImage1} alt="Hostel Block A" />
-            <h3>Block A</h3>
+            <h3>Female Hostel</h3>
             <p>Modern facilities with comfortable rooms</p>
           </div>
           <div className="hostel-card">
-            {/* <img src={hostelImage2} alt="Hostel Block B" /> */}
-            <h3>Block B</h3>
+            <img src={hostelImage2} alt="Hostel Block B" />
+            <h3>Male Hostel</h3>
             <p>Spacious rooms with great amenities</p>
           </div>
           <div className="hostel-card">
-            {/* <img src={hostelImage3} alt="Hostel Block C" /> */}
-            <h3>Block C</h3>
+            <img src={hostelImage3} alt="Hostel Block C" />
+            <h3>Mixed Hostel</h3>
             <p>Premium accommodation with study areas</p>
           </div>
         </div>

@@ -4,7 +4,7 @@
 
 .hero {
   height: 83vh;
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+  background: linear-gradient(rgba(177, 101, 101, 0.5), rgba(28, 4, 4, 0.5)),
               url('../../assets/images/hostel1.jpg');
   background-size: contain;
   background-position:left;
@@ -19,12 +19,12 @@
 .hero-content {
   max-width: 700px;
   padding: 1rem;
-  animation: fadeIn 4s ease-in;
+  animation: slideIn 4s ease-in;
 }
 
 .hero-content h1 {
-  font-size: 3.3rem;
-  margin-bottom: 2rem;
+  font-size: 3.9rem;
+  margin-bottom: 1rem;
 }
 
 .hero-content p {
@@ -44,54 +44,50 @@
 }
 
 .cta-button:hover {
-  transform: scale(1.05);
+  transform: scale(1.15);
 }
 
 .features {
-  padding: 4rem 2rem;
-  background-color: #f8f9fa;
+  padding: 2rem 1rem;
+  padding-bottom: 49px;
+  background-color: #ffffff;
+  animation: fadeIn 3s ease-in-out;
 }
 
-.features h2 {
+.features h2, .hostels-preview h2{
   text-align: center;
-  margin-bottom: 3rem;
-    color: #2c3e50;
-    font-size: 40px;
+  color: #48627d;
+  font-size: 49px;
 }
 
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
+  gap: 2.5rem;
+  max-width: 1300px;
   margin: 0 auto;
 }
 
 .feature-card {
   text-align: center;
-  padding: 2rem;
   background: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px #3498db;
-  transition: transform 0.3s ease;
+  padding: 1rem;
+  border-radius: 20px;
+  box-shadow: 6px 7px 9px #3498db;
+ 
 }
 
 .feature-card:hover {
   transform: translateY(-10px);
-    box-shadow: 0 6px 12px rgba(241, 92, 92, 0.2);
+    box-shadow: 9px 8px 15px rgb(203, 115, 134);
 }
 
-.feature-card i {
-  font-size: 3rem;
+.feature-card i{
+  font-size: 4.5rem;
   color: #3498db;
-  margin-bottom: 1rem;
-}
-
-.feature-icon {
   width: 69px;
   height: 64px;
-  margin-bottom: 1rem;
-  transition: transform 0.3s ease;
+  animation: slideIn 4s step-start;
 }
 
 .benefit-card:hover .feature-icon {
@@ -99,12 +95,7 @@
 }
 
 .hostels-preview {
-  padding: 4rem 2rem;
-}
-
-.hostels-preview h2 {
-  text-align: center;
-  margin-bottom: 3rem;
+  padding: 1rem 2rem;
 }
 
 .hostel-cards {
@@ -116,7 +107,7 @@
 }
 
 .hostel-card {
-  background: white;
+  background: rgb(60, 36, 215);
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);

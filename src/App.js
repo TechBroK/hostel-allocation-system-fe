@@ -4,6 +4,8 @@ import Header from './component/header';
 import Home from "./pages/Home";
 import Footer from './component/footer'
 import Login from './pages/auth/Login';
+import Hostel from "./pages/hostel";
+import Allocation from './pages/Allocation';
 
 function App() {
   return (
@@ -12,8 +14,8 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/hostels" element={<Header />} />
-          <Route path="/allocations" element={<Header />} />
+          <Route path="/hostels" element={<Hostel />} />
+          <Route path="/allocations" element={<Allocation />} />
           <Route path="/profile" element={<Header />} />
           <Route path="/login" element={<Header />} />
           <Route path="/register" element={<Header />} />

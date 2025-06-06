@@ -27,9 +27,7 @@ const Header = () => {
             <li><Link to="/profile">Profile</Link></li>
             <li><Link to="/register">Register</Link></li>
             <li className="dropdown">
-              <button onClick={toggleDropdown} className="dropdown-btn">
-                Login ▼
-              </button>
+              <button onClick={toggleDropdown} className="dropdown-btn">Login ▼</button>
               {showDropdown && (
                 <div className="dropdown-content">
                   <Link to="/student-login">Student Login</Link>
