@@ -107,7 +107,7 @@
 }
 
 .hostel-card {
-  background: rgb(60, 36, 215);
+  background: white;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -115,6 +115,7 @@
 }
 
 .hostel-card:hover {
+   box-shadow: 0 4px 6px rgba(216, 24, 24, 0.1);
   transform: translateY(-10px);
 }
 

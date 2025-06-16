@@ -47,17 +47,17 @@ const Home = () => {
         <h2>Featured Hostels</h2>
         <div className="hostel-cards">
           <div className="hostel-card">
-            <img src={hostelImage1} alt="Hostel Block A" />
+            <img src={hostelImage1} alt="Female Hostel" />
             <h3>Female Hostel</h3>
             <p>Modern facilities with comfortable rooms</p>
           </div>
           <div className="hostel-card">
-            <img src={hostelImage2} alt="Hostel Block B" />
+            <img src={hostelImage2} alt="Male Hostel" />
             <h3>Male Hostel</h3>
             <p>Spacious rooms with great amenities</p>
           </div>
           <div className="hostel-card">
-            <img src={hostelImage3} alt="Hostel Block C" />
+            <img src={hostelImage3} alt="Mixed Hostel" />
             <h3>Mixed Hostel</h3>
             <p>Premium accommodation with study areas</p>
           </div>
