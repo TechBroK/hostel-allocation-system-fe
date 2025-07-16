@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import '../component/styles/hostel.css';
 import RoomDetailsModal from '../component/RoomDetailsModal';
 import RoomAvailability from '../component/RoomAvailability';
@@ -10,8 +10,8 @@ const Hostel = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
   const [error, setError] = useState(null);
-
-  const hostels = [
+  const [showAddRoomModal, setShowAddRoomModal] = useState(false);
+  const [hostels, setHostels] = useState([
     {
       id: 1,
       name: 'Block A',
@@ -52,10 +52,10 @@ const Hostel = () => {
       maintenanceRooms: 1,
       image: '/assets/images/hostel4.jpg'
     }
-  ];
+  ]);
 
   const generateRooms = (hostelId) => {
-    try {
+     try {
       const hostel = hostels.find(h => h.id === hostelId);
       if (!hostel) throw new Error('Hostel not found');
 
@@ -77,45 +77,40 @@ const Hostel = () => {
       console.error('Error generating rooms:', error);
       return [];
     }
-  };
-
+  }  
   const handleHostelClick = (hostelId) => {
     setSelectedHostel(hostelId);
-    setRooms(generateRooms(hostelId));
   };
 
   const handleAddRoom = (hostelId) => {
-    try {
-      const currentRooms = [...rooms];
-      const maxId = Math.max(...currentRooms.map(room => room.id), 0);
-      const newRoom = {
-        id: maxId + 1,
-        number: `${hostelId}${(currentRooms.length + 1).toString().padStart(2, '0')}`,
-        capacity: 4,
-        occupied: 0,
-        type: 'Standard',
-        floor: Math.ceil((currentRooms.length + 1) / 10)
-      };
-      setRooms( [...currentRooms, newRoom]);
-    } catch (error) {
-      console.error('Error adding room:', error);
-    }
-  };
+    const hostel = hostels.find(h => h.id === hostelId);
+    const newRoomNumber = `${hostelId}${(hostel.totalRooms + 1).toString().padStart(2, '0')}`;
+    
+    const newRoom = {
+      id: hostel.totalRooms + 1,
+      number: newRoomNumber,
+      capacity: 4,
+      occupied: 0,
+      type: 'Standard',
+      floor: Math.ceil((hostel.totalRooms + 1) / 10)
+    };
 
-  const handleDeleteRoom = (roomId) => {
-    setRooms(rooms.filter(room => room.id !== roomId));
+    setRooms(prevRooms => [...prevRooms, newRoom]);
+    
+    // Update hostels state
+    setHostels(prevHostels => prevHostels.map(h => {
+      if (h.id === hostelId) {
+        return {
+          ...h,
+          totalRooms: h.totalRooms + 1,
+          availableRooms: h.availableRooms + 1
+        };
+      }
+      return h;
+    }));
+    
+    setShowAddRoomModal(false);
   };
-
-  const filteredHostels = useMemo(() => {
-    return hostels.filter(hostel => {
-      const matchesSearch = hostel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          hostel.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      if (filter === 'available') return matchesSearch && hostel.availableRooms > 0;
-      if (filter === 'full') return matchesSearch && hostel.availableRooms === 0;
-      return matchesSearch;
-    });
-  }, [hostels, searchTerm, filter]);
 
   return (
     <div className="hostel-container">
@@ -127,26 +122,9 @@ const Hostel = () => {
       )}
       {!selectedHostel ? (
         <>
-          <div className="search-filter-container">
-            <div className="search-box">
-              <i className="fi fi-rr-search"></i>
-              <input 
-                type="text"
-                placeholder="Search hostels..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="filter-options">
-              <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-                <option value="all">All Hostels</option>
-                <option value="available">Available Rooms</option>
-                <option value="full">Full Hostels</option>
-              </select>
-            </div>
-          </div>
+          <h1>Available Hostels</h1>
           <div className="hostels-grid">
-            {filteredHostels.map(hostel => (
+            {hostels.map(hostel => (
               <div key={hostel.id} className="hostel-card" onClick={() => handleHostelClick(hostel.id)}>
                 <div className="hostel-image">
                   <img src={hostel.image} alt={hostel.name} />
@@ -163,20 +141,18 @@ const Hostel = () => {
             ))}
           </div>
         </>
-      ) : 
-      
-      (
+      ) : (
         <div className="dashboard">
           <div className="dashboard-header">
             <button className="back-btn" onClick={() => setSelectedHostel(null)}>
               <i className="fi fi-rr-arrow-left"></i> Back to Hostels
             </button>
             <h1>{hostels.find(h => h.id === selectedHostel).name}</h1>
-            <button className="add-room-btn" onClick={() => handleAddRoom(selectedHostel)}>
+            <button className="add-room-btn" onClick={() => setShowAddRoomModal(true)}>
               <i className="fi fi-rr-plus"></i> Add Room
             </button>
           </div>
-          
+
           <div className="stats-grid">
             <div className="stat-card">
               <i className="fi fi-rr-building"></i>
@@ -185,7 +161,7 @@ const Hostel = () => {
                 <p>{hostels.find(h => h.id === selectedHostel).totalRooms}</p>
               </div>
             </div>
-            
+
             <div className="stat-card">
               <i className="fi fi-rr-key"></i>
               <div className="stat-info">
@@ -193,7 +169,7 @@ const Hostel = () => {
                 <p>{hostels.find(h => h.id === selectedHostel).occupiedRooms}</p>
               </div>
             </div>
-            
+
             <div className="stat-card">
               <i className="fi fi-rr-door-open"></i>
               <div className="stat-info">
@@ -201,7 +177,7 @@ const Hostel = () => {
                 <p>{hostels.find(h => h.id === selectedHostel).availableRooms}</p>
               </div>
             </div>
-            
+
             <div className="stat-card">
               <i className="fi fi-rr-wrench"></i>
               <div className="stat-info">
@@ -214,28 +190,17 @@ const Hostel = () => {
           <div className="rooms-section">
             <h2>Room Status</h2>
             <div className="rooms-grid">
-              {rooms.map(room => (
+              {generateRooms(selectedHostel).map(room => (
                 <div 
                   key={room.id} 
                   className={`room-card ${room.occupied === room.capacity ? 'full' : 'available'}`}
                 >
-                  <div className="room-header">
-                    <h3>Room {room.number}</h3>
-                    <button 
-                      className="delete-room-btn"
-                      onClick={() => handleDeleteRoom(room.id)}
-                    >
-                      <i className="fi fi-rr-trash"></i>
-                    </button>
-                  </div>
+                  <h3>Room {room.number}</h3>
                   <p className="room-type">{room.type}</p>
-                  <RoomAvailability 
-                    occupied={room.occupied} 
-                    capacity={room.capacity}
-                    roomNumber={room.number}
-                    type={room.type}
-                  />
-                  <button className="view-details-btn" onClick={() => setSelectedRoom(room)}>
+                  <p className="occupancy">
+                    {room.occupied}/{room.capacity} Occupied
+                  </p>
+                  <button className="view-details-btn">
                     View Details
                   </button>
                 </div>

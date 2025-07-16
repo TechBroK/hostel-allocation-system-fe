@@ -26,10 +26,10 @@ const RoomAvailability = ({ rooms }) => {
             <div className="occupancy-bar">
               <div 
                 className="occupancy-fill"
-                // style={{ 
-                //   width: `${(room.occupied / room.capacity) * 100}%`,
-                //   backgroundColor: room.occupied === room.capacity ? '#e74c3c' : '#2ecc71'
-                // }}
+                style={{ 
+                  width: `${(room.occupied / room.capacity) * 100}%`,
+                  backgroundColor: room.occupied === room.capacity ? '#e74c3c' : '#2ecc71'
+                }}
               />
             </div>
           </div>
