@@ -1,0 +1,8 @@
+TODO
+- Recall the homepage css and update til the end befor week ends
+- Work on the footer component adjust it display an size 
+- Add a go to top botton 
+- Building the hostel listing and allocation features
+- Adding a student profile page
+- Creating admin dashboard
+- add how it works to homepage

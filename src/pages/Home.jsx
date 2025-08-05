@@ -1,4 +1,4 @@
-import '../component/styles/home.css';
+import '../styles/home.css';
 import hostelImage1 from '../assets/images/hostel1.jpg';
 import hostelImage2 from '../assets/images/hostel2.jpg';
 import hostelImage3 from '../assets/images/hostel3.jpg';

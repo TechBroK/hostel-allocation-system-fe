@@ -1,5 +1,5 @@
 import React from 'react';
-import './styles/RoomAvailability.css';
+import '../styles/RoomAvailability.css';
 
 const RoomAvailability = ({ rooms }) => {
   // Filter available rooms (rooms with space)

@@ -1,5 +1,4 @@
-import React from 'react';
-import './styles/RoomDetailsModal.css';
+import '../styles/RoomDetailsModal.css';
 
 const RoomDetailsModal = ({ room, onClose }) => {
   const occupants = [

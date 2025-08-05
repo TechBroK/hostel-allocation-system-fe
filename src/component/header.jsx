@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../component/styles/header.css';
+import '../styles/header.css';
 import 'boxicons/css/boxicons.min.css';
 
 const Header = () => {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../component/styles/allocation.css';
+import '../styles/allocation.css';
 import RoomAvailability from '../component/RoomAvailability';
 
 

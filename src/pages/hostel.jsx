@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../component/styles/hostel.css';
+import '../styles/hostel.css';
 import RoomDetailsModal from '../component/RoomDetailsModal';
 import RoomAvailability from '../component/RoomAvailability';
 

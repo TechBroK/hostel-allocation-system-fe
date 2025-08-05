@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../../component/styles/Login.css';
+import '../../styles/Login.css'; 
 
 const Login = ({ userType }) => {
   const [formData, setFormData] = useState({
