@@ -3,7 +3,7 @@ import './App.css';
 import Header from './component/header';
 import Home from "./pages/Home";
 import Footer from './component/footer'
-import Login from './pages/auth/Login';
+import Login from './auth/Login';
 import Hostel from "./pages/hostel";
 import Allocation from './pages/Allocation';
 

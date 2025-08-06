@@ -72,7 +72,7 @@
   text-align: center;
   background: white;
   padding: 1rem;
-  border-radius: 200px;
+  border-radius: 30px;
   box-shadow: 6px 7px 9px #3498db;
  
 }
@@ -108,14 +108,14 @@
 
 .hostel-card {
   background: white;
-  border-radius: 10px;
+  border-radius: 15px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 6px 7px 9px #3498db;
   transition: transform 0.3s ease;
 }
 
 .hostel-card:hover {
-   box-shadow: 0 4px 6px rgba(216, 24, 24, 0.1);
+   box-shadow: 9px 8px 15px rgb(203, 115, 134);
   transform: translateY(-10px);
 }
 
@@ -129,6 +129,55 @@
 .hostel-card p {
   padding: 1rem;
   margin: 0;
+}
+
+.how-it-works {
+  margin-top:  5rem;
+  padding: 3rem 1rem;
+  background: #f8f9fa;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.how-it-works h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 49px;
+  color: #48627d;
+}
+.how-steps-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+}
+.how-step-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 220px;
+  box-shadow: 6px 7px 9px #3498db;
+  text-align: center;
+  transition: box-shadow 0.2s;
+}
+.how-step-card:hover {
+  box-shadow: 0 4px 16px #5b90d5ea;
+}
+.how-step-card i {
+ font-size: 4.5rem;
+  color: #3498db;
+  width: 69px;
+  height: 64px;
+  animation: slideIn 4s step-start;
+}
+.how-step-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #2d3a4a;
+}
+.how-step-card p {
+  font-size: 0.97rem;
+  color: #555;
 }
 
 .why-choose-us {
@@ -165,7 +214,7 @@
 
 .benefit-card i {
   font-size: 3rem;
-  color: #3498db;
+  color: #007bff;
   margin-bottom: 1rem;
 }
 
@@ -177,6 +226,21 @@
 .benefit-card p {
   color: #666;
   line-height: 1.6;
+}
+
+.step-number {
+  width: 36px;
+  height: 36px;
+  background: #85c3ec;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;;
+  box-shadow: 0 2px 6px rgba(52,152,219,0.15);
 }
 
 @keyframes fadeIn {
@@ -205,5 +269,14 @@
   
   .benefit-card {
     padding: 1.5rem;
+  }
+  
+  .how-steps-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+  .how-step-card {
+    width: 90%;
+    margin-bottom: 1rem;
   }
 }

@@ -64,6 +64,42 @@ const Home = () => {
         </div>
       </section>
 
+      <section className="how-it-works">
+        <h2>How It Works</h2>
+        <div className="how-steps-grid">
+          <div className="how-step-card">
+            <div className="step-number">1</div>
+            <i className="fi fi-rr-user-add"></i>
+            <h3>Login & Register</h3>
+            <p>Create your account or log in to start the process.</p>
+          </div>
+          <div className="how-step-card">
+            <div className="step-number">2</div>
+            <i className="fi fi-rr-home"></i>
+            <h3>Apply for Room</h3>
+            <p>Browse available hostels and submit your application for a room.</p>
+          </div>
+          <div className="how-step-card">
+            <div className="step-number">3</div>
+            <i className="fi fi-rr-users-alt"></i>
+            <h3>Match Personality</h3>
+            <p>Our system matches you with roommates based on your profile and preferences.</p>
+          </div>
+          <div className="how-step-card">
+            <div className="step-number">4</div>
+            <i className="fi fi-rr-check"></i>
+            <h3>Confirm Allocation</h3>
+            <p>Receive confirmation and details of your allocated room.</p>
+          </div>
+          <div className="how-step-card">
+            <div className="step-number">5</div>
+            <i className="fi fi-rr-headset"></i>
+            <h3>Get Support</h3>
+            <p>Access 24/7 support for any accommodation-related queries.</p>
+          </div>
+        </div>
+      </section>
+
       <section className="why-choose-us">
         <h2>Why Choose Us</h2>
         <div className="benefits-grid">
