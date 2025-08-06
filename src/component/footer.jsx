@@ -32,17 +32,19 @@ const Footer = () => {
           </ul>
         </div>
 
-        <div className="footer-section">
+        <div className="footer-sections">
           <h3>Contact Info</h3>
           <ul className="contact-info">
             <li>
               <i className='bx bxs-map'></i>
               123 University Road, Campus Area
-            </li>
+            </li> 
+            <br />
             <li>
               <i className='bx bxs-phone'></i>
               +234 123 456 7890
             </li>
+            <br />
             <li>
               <i className='bx bxs-envelope'></i>
               info@hostelallocation.com
