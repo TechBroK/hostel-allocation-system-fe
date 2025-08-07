@@ -11,6 +11,16 @@ const Hostel = () => {
   const [filter, setFilter] = useState('all');
   const [error, setError] = useState(null);
   const [showAddRoomModal, setShowAddRoomModal] = useState(false);
+  const [showAddHostelModal, setShowAddHostelModal] = useState(false);
+  const [newHostel, setNewHostel] = useState({
+    name: '',
+    description: '',
+    totalRooms: 0,
+    occupiedRooms: 0,
+    availableRooms: 0,
+    maintenanceRooms: 0,
+    image: '/assets/images/default-hostel.jpg'
+  });
   const [hostels, setHostels] = useState([
     {
       id: 1,
@@ -112,6 +122,29 @@ const Hostel = () => {
     setShowAddRoomModal(false);
   };
 
+  const handleAddHostel = (e) => {
+    e.preventDefault();
+    const newId = Math.max(...hostels.map(h => h.id)) + 1;
+    
+    const hostelToAdd = {
+      ...newHostel,
+      id: newId,
+      availableRooms: Number(newHostel.totalRooms)
+    };
+
+    setHostels(prev => [...prev, hostelToAdd]);
+    setShowAddHostelModal(false);
+    setNewHostel({
+      name: '',
+      description: '',
+      totalRooms: 0,
+      occupiedRooms: 0,
+      availableRooms: 0,
+      maintenanceRooms: 0,
+      image: '/assets/images/default-hostel.jpg'
+    });
+  };
+
   return (
     <div className="hostel-container">
       {error && (
@@ -122,7 +155,16 @@ const Hostel = () => {
       )}
       {!selectedHostel ? (
         <>
-          <h1>Available Hostels</h1>
+          <div className="hostels-header">
+            <h1>Available Hostels</h1>
+            <button 
+              className="add-hostel-btn"
+              onClick={() => setShowAddHostelModal(true)}
+            >
+              <i className="fi fi-rr-plus"></i> Add Hostel
+            </button>
+          </div>
+          
           <div className="hostels-grid">
             {hostels.map(hostel => (
               <div key={hostel.id} className="hostel-card" onClick={() => handleHostelClick(hostel.id)}>
@@ -140,6 +182,52 @@ const Hostel = () => {
               </div>
             ))}
           </div>
+
+          {showAddHostelModal && (
+            <div className="modal">
+              <div className="modal-content">
+                <h2>Add New Hostel</h2>
+                <form onSubmit={handleAddHostel}>
+                  <div className="form-group">
+                    <label>Name:</label>
+                    <input
+                      type="text"
+                      required
+                      value={newHostel.name}
+                      onChange={(e) => setNewHostel({...newHostel, name: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Description:</label>
+                    <input
+                      type="text"
+                      required
+                      value={newHostel.description}
+                      onChange={(e) => setNewHostel({...newHostel, description: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Total Rooms:</label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      value={newHostel.totalRooms}
+                      onChange={(e) => setNewHostel({...newHostel, totalRooms: Number(e.target.value)})}
+                    />
+                  </div>
+                  <div className="modal-actions">
+                    <button type="button" className="cancel-btn" onClick={() => setShowAddHostelModal(false)}>
+                      <i className="fi fi-rr-cross"></i> Cancel
+                    </button>
+                    <button type="submit" className="submit-btn">
+                      <i className="fi fi-rr-check"></i> Add Hostel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </>
       ) : (
         <div className="dashboard">
