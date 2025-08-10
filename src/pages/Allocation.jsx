@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import '../styles/allocation.css';
 import RoomAvailability from '../component/RoomAvailability';
+
 
 
 const Allocation = () => {
@@ -28,7 +29,8 @@ const Allocation = () => {
       visitorFrequency: ''
     }
   });
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   const personalityOptions = {
     sleepSchedule: ['Early Bird (Before 10PM)', 'Night Owl (After 10PM)', 'Variable'],
     studyHabits: ['In Room', 'Library', 'Study Groups', 'Mixed'],
@@ -39,6 +41,7 @@ const Allocation = () => {
     visitorFrequency: ['Rarely', 'Occasionally', 'Frequently']
   };
 
+  
   // Add hostels data
   const hostels = [
     {
@@ -62,34 +65,61 @@ const Allocation = () => {
   // Filter available rooms
   const availableRooms = rooms.filter(room => room.occupied < room.capacity);
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const errors = {};
+    
+    // Basic field validation
+    if (!formData.fullName) errors.fullName = 'Name is required';
+    if (!formData.matricNumber) errors.matricNumber = 'Matric number is required';
+    if (!/^\d{8}$/.test(formData.matricNumber)) {
+      errors.matricNumber = 'Must be 8 digits';
+    }
+    
+    if (!/^\d{11}$/.test(formData.emergencyContact)) {
+  errors.emergencyContact = 'Must be 11 digits';
+}
+if (!formData.level) errors.level = 'Level is required';
+if (!formData.gender) errors.gender = 'Gender is required';
+if (formData.personalityTraits.hobbies.length < 1) {
+  errors.hobbies = 'Select at least one hobby';
+}
+
+
+    // Phone validation
+    if (!/^\d{11}$/.test(formData.phoneNumber)) {
+      errors.phoneNumber = 'Must be 11 digits';
+    }
+    
+    // Personality traits validation
+    if (!formData.personalityTraits.sleepSchedule) {
+      errors.sleepSchedule = 'Required';
+    }
+    if (!formData.personalityTraits.studyHabits) {
+      errors.studyHabits = 'Required';
+    }
+    
+    return errors;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate required fields
-    const requiredFields = ['fullName', 'matricNumber', 'department', 'level', 'phoneNumber', 'emergencyContact'];
-    const missingFields = requiredFields.filter(field => !formData[field]);
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
     
-    if (missingFields.length > 0) {
-      alert(`Please fill in all required fields: ${missingFields.join(', ')}`);
-      return;
+    try {
+      setIsSubmitting(true);
+      // API call would go here
+      console.log('Form submitted:', formData);
+    } catch (error) {
+      console.error('Submission error:', error);
+      setFormErrors({ submit: 'Failed to submit application' });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Validate matric number format (assuming 8 digits)
-    const matricRegex = /^\d{8}$/;
-    if (!matricRegex.test(formData.matricNumber)) {
-      alert('Please enter a valid 8-digit matric number');
-      return;
-    }
-
-    // Validate phone numbers
-    const phoneRegex = /^\d{11}$/;
-    if (!phoneRegex.test(formData.phoneNumber) || !phoneRegex.test(formData.emergencyContact)) {
-      alert('Please enter valid 11-digit phone numbers');
-      return;
-    }
-
-    console.log('Application submitted:', { room: selectedRoom, student: formData });
-    // Add your submission logic here
   };
 
   return (
@@ -155,9 +185,16 @@ const Allocation = () => {
                 type="text"
                 id="fullName"
                 value={formData.fullName}
-                onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, fullName: e.target.value});
+                  setFormErrors({...formErrors, fullName: ''});
+                }}
+                className={formErrors.fullName ? 'error' : ''}
                 required
               />
+              {formErrors.fullName && (
+                <span className="error-message">{formErrors.fullName}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -166,9 +203,16 @@ const Allocation = () => {
                 type="text"
                 id="matricNumber"
                 value={formData.matricNumber}
-                onChange={(e) => setFormData({...formData, matricNumber: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, matricNumber: e.target.value});
+                  setFormErrors({...formErrors, matricNumber: ''});
+                }}
+                className={formErrors.matricNumber ? 'error' : ''}
                 required
               />
+              {formErrors.matricNumber && (
+                <span className="error-message">{formErrors.matricNumber}</span>
+              )}
             </div>
 
             <div className="form-row">
@@ -207,9 +251,16 @@ const Allocation = () => {
                 type="tel"
                 id="phoneNumber"
                 value={formData.phoneNumber}
-                onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                onChange={(e) => {
+                  setFormData({...formData, phoneNumber: e.target.value});
+                  setFormErrors({...formErrors, phoneNumber: ''});
+                }}
+                className={formErrors.phoneNumber ? 'error' : ''}
                 required
               />
+              {formErrors.phoneNumber && (
+                <span className="error-message">{formErrors.phoneNumber}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -256,6 +307,7 @@ const Allocation = () => {
                       sleepSchedule: e.target.value
                     }
                   })}
+                  className={formErrors.sleepSchedule ? 'error' : ''}
                   required
                 >
                   <option value="">Select Sleep Schedule</option>
@@ -263,6 +315,9 @@ const Allocation = () => {
                     <option key={option} value={option}>{option}</option>
                   ))}
                 </select>
+                {formErrors.sleepSchedule && (
+                  <span className="error-message">{formErrors.sleepSchedule}</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -277,6 +332,7 @@ const Allocation = () => {
                       studyHabits: e.target.value
                     }
                   })}
+                  className={formErrors.studyHabits ? 'error' : ''}
                   required
                 >
                   <option value="">Select Study Habit</option>
@@ -284,6 +340,9 @@ const Allocation = () => {
                     <option key={option} value={option}>{option}</option>
                   ))}
                 </select>
+                {formErrors.studyHabits && (
+                  <span className="error-message">{formErrors.studyHabits}</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -400,9 +459,13 @@ const Allocation = () => {
               </div>
             </div>
 
-            <button type="submit" className="submit-btn">
-              Submit Application
+            <button type="submit" className="submit-btn" disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Submit Application'}
             </button>
+
+            {formErrors.submit && (
+              <div className="error-message submit-error">{formErrors.submit}</div>
+            )}
           </form>
         </div>
       ) : (

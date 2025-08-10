@@ -64,6 +64,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
 }
 
 .form-row {
@@ -86,6 +88,17 @@
   font-size: 1rem;
 }
 
+.form-group input.error,
+.form-group select.error {
+  border-color: #e74c3c;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
 .form-group textarea {
   min-height: 100px;
   resize: vertical;
@@ -104,6 +117,11 @@
 
 .submit-btn:hover {
   background: #2980b9;
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .personality-section {

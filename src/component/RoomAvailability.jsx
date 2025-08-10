@@ -1,9 +1,8 @@
-import React from 'react';
 import '../styles/RoomAvailability.css';
 
 const RoomAvailability = ({ rooms }) => {
   // Filter available rooms (rooms with space)
-  const availableRooms = rooms.filter(room => room.occupied < room.capacity) || [];
+  const availableRooms = (rooms || []).filter(room => room.occupied < room.capacity) || [];
 
   return (
     <div className="room-availability-container">
