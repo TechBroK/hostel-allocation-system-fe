@@ -19,7 +19,6 @@ function App() {
           <Route path="/allocations" element={<Allocation />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<Header />} />
-          <Route path="/register" element={<Header />} />
           <Route path="/forgot-password" element={<Header />} />
           <Route path="/student-login" element={<Login userType="student" />} />
           <Route path="/admin-login" element={<Login userType="admin" />} />
