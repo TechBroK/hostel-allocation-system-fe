@@ -16,7 +16,6 @@
 }
 
 .hero-content {
-  max-width: 700px;
   padding: 1rem;
   animation: slideIn 4s ease-in;
 }

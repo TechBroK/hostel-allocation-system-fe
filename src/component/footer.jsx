@@ -1,5 +1,3 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
 import '../styles/footer.css';
 
 const Footer = () => {
@@ -22,29 +20,18 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="footer-section">
-          <h3>Quick Links</h3>
-          <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/hostels">Hostels</Link></li>
-            <li><Link to="/allocations">Allocations</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-          </ul>
-        </div>
-
         <div className="footer-sections">
           <h3>Contact Info</h3>
+          <br/>
           <ul className="contact-info">
             <li>
               <i className='bx bxs-map'></i>
               123 University Road, Campus Area
             </li> 
-            <br />
             <li>
               <i className='bx bxs-phone'></i>
               +234 123 456 7890
             </li>
-            <br />
             <li>
               <i className='bx bxs-envelope'></i>
               info@hostelallocation.com

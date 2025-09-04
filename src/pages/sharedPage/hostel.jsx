@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import '../styles/hostel.css';
-import RoomDetailsModal from '../component/RoomDetailsModal';
-import RoomAvailability from '../component/RoomAvailability';
+import '../../styles/hostel.css';
+import RoomDetailsModal from '../../component/RoomDetailsModal';
+import RoomAvailability from '../../component/RoomAvailability';
 
 const Hostel = () => {
   const [rooms, setRooms] = useState([]);
@@ -12,6 +12,7 @@ const Hostel = () => {
   const [error, setError] = useState(null);
   const [showAddRoomModal, setShowAddRoomModal] = useState(false);
   const [showAddHostelModal, setShowAddHostelModal] = useState(false);
+  const [showRoomDetailsModal, setShowRoomDetailsModal] = useState(false);
   const [newHostel, setNewHostel] = useState({
     name: '',
     description: '',
@@ -20,6 +21,13 @@ const Hostel = () => {
     availableRooms: 0,
     maintenanceRooms: 0,
     image: '/assets/images/default-hostel.jpg'
+  });
+  const [newRoom, setNewRoom] = useState({
+    number: '',
+    capacity: 4,
+    type: 'Standard',
+    occupied: 0,
+    occupants: []
   });
   const [hostels, setHostels] = useState([
     {
@@ -63,9 +71,10 @@ const Hostel = () => {
       image: '/assets/images/hostel4.jpg'
     }
   ]);
+  const [selectedForAllocation, setSelectedForAllocation] = useState(null);
 
   const generateRooms = (hostelId) => {
-     try {
+    try {
       const hostel = hostels.find(h => h.id === hostelId);
       if (!hostel) throw new Error('Hostel not found');
 
@@ -73,13 +82,22 @@ const Hostel = () => {
       const totalRooms = hostel.totalRooms;
       
       for (let i = 1; i <= totalRooms; i++) {
+        const occupied = Math.floor(Math.random() * (i % 3 === 0 ? 3 : 5));
+        const occupants = Array(occupied).fill(null).map((_, index) => ({
+          id: index + 1,
+          name: `Student ${index + 1}`,
+          matricNumber: `MAT${Math.random().toString(36).substr(2, 6)}`,
+          level: ['100', '200', '300', '400'][Math.floor(Math.random() * 4)]
+        }));
+
         rooms.push({
           id: i,
           number: `${hostelId}${i.toString().padStart(2, '0')}`,
           capacity: i % 3 === 0 ? 2 : 4,
-          occupied: Math.floor(Math.random() * (i % 3 === 0 ? 3 : 5)),
+          occupied,
           type: i % 5 === 0 ? 'Premium' : 'Standard',
-          floor: Math.ceil(i / 10)
+          floor: Math.ceil(i / 10),
+          occupants
         });
       }
       return rooms;
@@ -87,29 +105,32 @@ const Hostel = () => {
       console.error('Error generating rooms:', error);
       return [];
     }
-  }  
+  }
+
   const handleHostelClick = (hostelId) => {
     setSelectedHostel(hostelId);
   };
 
-  const handleAddRoom = (hostelId) => {
-    const hostel = hostels.find(h => h.id === hostelId);
-    const newRoomNumber = `${hostelId}${(hostel.totalRooms + 1).toString().padStart(2, '0')}`;
+  const handleAddRoom = (e) => {
+    e.preventDefault();
+    const hostel = hostels.find(h => h.id === selectedHostel);
+    const roomNumber = `${selectedHostel}${(hostel.totalRooms + 1).toString().padStart(2, '0')}`;
     
-    const newRoom = {
+    const roomToAdd = {
       id: hostel.totalRooms + 1,
-      number: newRoomNumber,
-      capacity: 4,
+      number: roomNumber,
+      capacity: parseInt(newRoom.capacity),
       occupied: 0,
-      type: 'Standard',
-      floor: Math.ceil((hostel.totalRooms + 1) / 10)
+      type: newRoom.type,
+      floor: Math.ceil((hostel.totalRooms + 1) / 10),
+      occupants: []
     };
 
-    setRooms(prevRooms => [...prevRooms, newRoom]);
+    setRooms(prevRooms => [...prevRooms, roomToAdd]);
     
-    // Update hostels state
+    // Update hostel stats
     setHostels(prevHostels => prevHostels.map(h => {
-      if (h.id === hostelId) {
+      if (h.id === selectedHostel) {
         return {
           ...h,
           totalRooms: h.totalRooms + 1,
@@ -120,10 +141,30 @@ const Hostel = () => {
     }));
     
     setShowAddRoomModal(false);
+    setNewRoom({
+      number: '',
+      capacity: 4,
+      type: 'Standard',
+      occupied: 0,
+      occupants: []
+    });
+  };
+
+  const validateHostel = (hostelData) => {
+    const errors = {};
+    if (!hostelData.name) errors.name = 'Name is required';
+    if (!hostelData.totalRooms) errors.totalRooms = 'Total rooms is required';
+    if (hostelData.totalRooms < 1) errors.totalRooms = 'Must have at least 1 room';
+    return errors;
   };
 
   const handleAddHostel = (e) => {
     e.preventDefault();
+    const errors = validateHostel(newHostel);
+    if (Object.keys(errors).length > 0) {
+      setError('Please fix the form errors');
+      return;
+    }
     const newId = Math.max(...hostels.map(h => h.id)) + 1;
     
     const hostelToAdd = {
@@ -144,6 +185,29 @@ const Hostel = () => {
       image: '/assets/images/default-hostel.jpg'
     });
   };
+
+  const handleRoomSelection = async (room) => {
+    if (!window.confirm(`Are you sure you want to select Room ${room.number}?`)) {
+      return;
+    }
+    setSelectedForAllocation(room);
+    // Here you would typically make an API call to update the student's allocation status
+    // For now, we'll just console.log
+    console.log(`Room ${room.number} selected for allocation`);
+  };
+
+  const filteredRooms = React.useMemo(() => {
+    return generateRooms(selectedHostel)
+      .filter(room => {
+        if (filter === 'available') return room.occupied < room.capacity;
+        if (filter === 'full') return room.occupied === room.capacity;
+        return true;
+      })
+      .filter(room => 
+        room.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        room.type.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+  }, [selectedHostel, filter, searchTerm]);
 
   return (
     <div className="hostel-container">
@@ -277,24 +341,138 @@ const Hostel = () => {
 
           <div className="rooms-section">
             <h2>Room Status</h2>
+            <div className="rooms-controls">
+              <input
+                type="text"
+                placeholder="Search rooms..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              <select 
+                value={filter} 
+                onChange={(e) => setFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Rooms</option>
+                <option value="available">Available</option>
+                <option value="full">Full</option>
+              </select>
+            </div>
             <div className="rooms-grid">
-              {generateRooms(selectedHostel).map(room => (
+              {filteredRooms.map(room => (
                 <div 
                   key={room.id} 
                   className={`room-card ${room.occupied === room.capacity ? 'full' : 'available'}`}
                 >
                   <h3>Room {room.number}</h3>
                   <p className="room-type">{room.type}</p>
-                  <p className="occupancy">
-                    {room.occupied}/{room.capacity} Occupied
-                  </p>
-                  <button className="view-details-btn">
-                    View Details
-                  </button>
+                  <div className="occupancy-indicator">
+                    <i className="fi fi-rr-users"></i>
+                    <span>{room.occupied}/{room.capacity} Occupied</span>
+                  </div>
+                  <div className="room-card-actions">
+                    <button 
+                      className="view-details-btn"
+                      onClick={() => {
+                        setSelectedRoom(room);
+                        setShowRoomDetailsModal(true);
+                      }}
+                    >
+                      <i className="fi fi-rr-eye"></i>
+                    </button>
+                    {room.occupied < room.capacity && (
+                      <button 
+                        className="select-room-btn"
+                        onClick={() => handleRoomSelection(room)}
+                        disabled={selectedForAllocation?.id === room.id}
+                      >
+                        {selectedForAllocation?.id === room.id ? (
+                          <i className="fi fi-rr-check"></i>
+                        ) : (
+                          <i className="fi fi-rr-plus"></i>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
+
+          {showAddRoomModal && (
+            <div className="modal">
+              <div className="modal-content">
+                <h2>Add New Room</h2>
+                <form onSubmit={handleAddRoom}>
+                  <div className="form-group">
+                    <label>Capacity:</label>
+                    <select
+                      value={newRoom.capacity}
+                      onChange={(e) => setNewRoom({...newRoom, capacity: e.target.value})}
+                      required
+                    >
+                      <option value="2">2 Students</option>
+                      <option value="4">4 Students</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Type:</label>
+                    <select
+                      value={newRoom.type}
+                      onChange={(e) => setNewRoom({...newRoom, type: e.target.value})}
+                      required
+                    >
+                      <option value="Standard">Standard</option>
+                      <option value="Premium">Premium</option>
+                    </select>
+                  </div>
+                  <div className="modal-actions">
+                    <button type="button" className="cancel-btn" onClick={() => setShowAddRoomModal(false)}>
+                      <i className="fi fi-rr-cross"></i> Cancel
+                    </button>
+                    <button type="submit" className="submit-btn">
+                      <i className="fi fi-rr-check"></i> Add Room
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {showRoomDetailsModal && selectedRoom && (
+            <div className="modal">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h2>Room {selectedRoom.number} Details</h2>
+                  <button className="close-btn" onClick={() => setShowRoomDetailsModal(false)}>
+                    <i className="fi fi-rr-cross"></i>
+                  </button>
+                </div>
+                <div className="room-details">
+                  <p><strong>Type:</strong> {selectedRoom.type}</p>
+                  <p><strong>Floor:</strong> {selectedRoom.floor}</p>
+                  <p><strong>Capacity:</strong> {selectedRoom.capacity}</p>
+                  <p><strong>Occupied:</strong> {selectedRoom.occupied}</p>
+                  
+                  <h3>Current Occupants</h3>
+                  {selectedRoom.occupants.length > 0 ? (
+                    <div className="occupants-list">
+                      {selectedRoom.occupants.map(student => (
+                        <div key={student.id} className="occupant-card">
+                          <h4>{student.name}</h4>
+                          <p>Matric: {student.matricNumber}</p>
+                          <p>Level: {student.level}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>No current occupants</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
       {selectedRoom && (

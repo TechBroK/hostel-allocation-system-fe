@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import '../styles/allocation.css';
-import RoomAvailability from '../component/RoomAvailability';
+import '../../styles/allocation.css';
+import RoomAvailability from '../../component/RoomAvailability';
 
 
 
@@ -196,6 +196,25 @@ if (formData.personalityTraits.hobbies.length < 1) {
                 <span className="error-message">{formErrors.fullName}</span>
               )}
             </div>
+
+            <div className="form-group">
+              <label htmlFor="email">Email Address</label>
+              <input
+                type="email"
+                id="email"
+                value={formData.email}
+                onChange={(e) => {
+                  setFormData({ ...formData, email: e.target.value });
+                  setFormErrors({ ...formErrors, email: '' });
+                }}
+                className={formErrors.email ? 'error' : ''}
+                required
+              />
+              {formErrors.email && (
+                <span className="error-message">{formErrors.email}</span>
+              )}
+            </div>
+
 
             <div className="form-group">
               <label htmlFor="matricNumber">Matric Number</label>

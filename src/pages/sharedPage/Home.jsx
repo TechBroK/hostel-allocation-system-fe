@@ -1,7 +1,7 @@
-import '../styles/home.css';
-import hostelImage1 from '../assets/images/hostel1.jpg';
-import hostelImage2 from '../assets/images/hostel2.jpg';
-import hostelImage3 from '../assets/images/hostel3.jpg';
+import '../../styles/home.css';
+import hostelImage1 from '../../assets/images/hostel1.jpg';
+import hostelImage2 from '../../assets/images/hostel2.jpg';
+import hostelImage3 from '../../assets/images/hostel3.jpg';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
@@ -11,7 +11,7 @@ const Home = () => {
         <div className="hero-content">
           <h1>Welcome to Our Hostel Allocation System</h1>
           <p>Find and secure your perfect campus accommodation.</p>
-          <Link to='/register'>
+          <Link to='/student-login'>
           <button className="cta-button">Get Started</button>          
           </Link>
         </div>

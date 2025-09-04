@@ -1,12 +1,13 @@
 import {Routes, Route, BrowserRouter as Router } from "react-router-dom";
 import './App.css';
 import Header from './component/header';
-import Home from "./pages/Home";
+import Home from "./pages/sharedPage/Home";
 import Footer from './component/footer'
-import Login from './auth/Login';
-import Hostel from "./pages/hostel";
-import Allocation from './pages/Allocation';
-import Profile from './pages/profile';
+import AuthForm from './auth/AuthForm';
+import Hostel from "./pages/sharedPage/hostel";
+import Allocation from './pages/studentPage/Allocation';
+import Profile from './pages/studentPage/profile';
+import AdminDashbord from "./pages/adminFolder/adminPage";
 
 function App() {
   return (
@@ -18,10 +19,10 @@ function App() {
           <Route path="/hostels" element={<Hostel />} />
           <Route path="/allocations" element={<Allocation />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/login" element={<Header />} />
+          <Route path="/AuthForm" element={<AdminDashbord/>} />
           <Route path="/forgot-password" element={<Header />} />
-          <Route path="/student-login" element={<Login userType="student" />} />
-          <Route path="/admin-login" element={<Login userType="admin" />} />
+          <Route path="/student-login" element={<AuthForm userType="student" />} />
+          <Route path="/admin-login" element={<AuthForm userType="admin" />} />
         </Routes>
         <Footer />
       </Router>
