@@ -3,11 +3,15 @@ import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import TogglePanel from "./TogglePanel";
 import "../styles/Login.css";
+import Header from "../component/header";
+import Footer from "../component/footer";
 
 const AuthForm = () => {
   const [active, setActive] = useState(false);
 
   return (
+   <>
+   <Header />
     <div className={`container ${active ? "active" : ""}`}>
       {/* Forms */}
       <LoginForm />
@@ -17,7 +21,6 @@ const AuthForm = () => {
       <div className="toggle-box">
         <TogglePanel
           side="left"
-          img="rema.png"
           title="Hello, Welcome!"
           text="Don't have an account?"
           buttonText="Register"
@@ -25,7 +28,6 @@ const AuthForm = () => {
         />
         <TogglePanel
           side="right"
-          img="rema.png"
           title="Welcome Back!"
           text="Already have an account?"
           buttonText="LogIn"
@@ -33,6 +35,8 @@ const AuthForm = () => {
         />
       </div>
     </div>
+    <Footer />
+    </>
   );
 };
 

@@ -1,15 +1,11 @@
 import React from "react";
+import "../../../styles/admin.css"; 
 
-const Topbar = ({ adminName }) => {
-  return (
-    <header className="flex justify-between items-center bg-white shadow-md p-4 ml-64">
-      <h1 className="text-xl font-bold">Hostel Allocation System</h1>
-      <div className="flex items-center gap-4">
-        <span className="font-medium">Welcome, {adminName}</span>
-        <button className="bg-red-500 text-white px-3 py-1 rounded">Logout</button>
-      </div>
-    </header>
-  );
-};
+const Topbar = ({ adminName }) => (
+  <div className="topbar">
+    <span className="admin-name">Welcome, {adminName}</span>
+    {/* Add logout or notifications if needed */}
+  </div>
+);
 
 export default Topbar;

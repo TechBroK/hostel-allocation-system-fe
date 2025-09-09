@@ -1,12 +1,15 @@
-import '../../styles/home.css';
 import hostelImage1 from '../../assets/images/hostel1.jpg';
 import hostelImage2 from '../../assets/images/hostel2.jpg';
 import hostelImage3 from '../../assets/images/hostel3.jpg';
 import { Link } from 'react-router-dom';
+import Footer from "../../component/footer"
+import Header from '../../component/header';
+import '../../styles/home.css';
 
 const Home = () => {
   return (
     <div className="home">
+       <Header />
       <section className="hero">
         <div className="hero-content">
           <h1>Welcome to Our Hostel Allocation System</h1>
@@ -128,6 +131,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 };

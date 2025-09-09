@@ -8,7 +8,7 @@ const RegisterForm = () => {
           <i className="bx bxs-user"></i>
         </div>
         <div className="input-box">
-          <input type="email" placeholder="Email" required />
+          <input type="email" placeholder="Email Address" required />
           <i className="bx bxs-envelope"></i>
         </div>
         <div className="input-box">

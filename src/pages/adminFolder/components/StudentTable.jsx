@@ -1,33 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
+import "../../../styles/admin.css"; 
+
 
 const StudentTable = ({ students }) => {
+  const [showModal, setShowModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  const handleEdit = (student) => {
+    setSelectedStudent(student);
+    setShowModal(true);
+  };
+
   return (
-    <div className="bg-white shadow rounded p-4">
-      <h2 className="text-xl font-bold mb-4">Students</h2>
-      <table className="w-full border-collapse border border-gray-200">
+    <>
+      <table className="admin-table">
         <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2 border">Name</th>
-            <th className="p-2 border">Matric No</th>
-            <th className="p-2 border">Room</th>
-            <th className="p-2 border">Actions</th>
+          <tr>
+            <th>Name</th>
+            <th>Matric</th>
+            <th>Level</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {students.map((s, i) => (
-            <tr key={i} className="hover:bg-gray-50">
-              <td className="p-2 border">{s.name}</td>
-              <td className="p-2 border">{s.matric}</td>
-              <td className="p-2 border">{s.room || "Unassigned"}</td>
-              <td className="p-2 border">
-                <button className="bg-blue-500 text-white px-2 py-1 rounded mr-2">Edit</button>
-                <button className="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+            <tr key={i}>
+              <td>{s.name}</td>
+              <td>{s.matric}</td>
+              <td>{s.level}</td>
+              <td>{s.status}</td>
+              <td>
+                <button className="admin-btn" onClick={() => handleEdit(s)}>Edit</button>
+                <button className="admin-btn">Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+      {showModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Edit Student</h3>
+            {/* Add form fields here */}
+            <button className="admin-btn" onClick={() => setShowModal(false)}>Close</button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

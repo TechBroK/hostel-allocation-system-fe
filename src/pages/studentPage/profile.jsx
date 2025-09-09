@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import "./../../styles/profile.css";
+import Header from "../../component/header";
+import Footer from "../../component/footer";
 
 const studentData = {
   name: "Jane Doe",
@@ -119,6 +121,8 @@ const Profile = () => {
   };
 
   return (
+   <>
+   <Header />
     <div className="profile-dashboard">
       <div className="profile-dashboard-header">
         <div className="profile-avatar-wrapper">
@@ -126,11 +130,9 @@ const Profile = () => {
             src={studentData.profilePic}
             className="profile-dashboard-avatar"
           />
-          {/* Flaticon user icon overlay */}
           <span className="profile-avatar-icon">
             <i className="fi fi-rr-user"></i>
           </span>
-          {/* Flaticon plus icon for editing */}
           <label className="profile-avatar-plus">
             <i className="fi fi-rr-plus"></i>
             <input
@@ -373,6 +375,8 @@ const Profile = () => {
         </div>
       )}
     </div>
+    <Footer />
+   </>
   );
 };
 

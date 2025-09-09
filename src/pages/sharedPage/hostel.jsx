@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import '../../styles/hostel.css';
+import Header from '../../component/header';
 import RoomDetailsModal from '../../component/RoomDetailsModal';
-import RoomAvailability from '../../component/RoomAvailability';
+import Footer from '../../component/footer';
 
 const Hostel = () => {
   const [rooms, setRooms] = useState([]);
@@ -20,7 +21,6 @@ const Hostel = () => {
     occupiedRooms: 0,
     availableRooms: 0,
     maintenanceRooms: 0,
-    image: '/assets/images/default-hostel.jpg'
   });
   const [newRoom, setNewRoom] = useState({
     number: '',
@@ -30,6 +30,7 @@ const Hostel = () => {
     occupants: []
   });
   const [hostels, setHostels] = useState([
+    //hostels conponent 
     {
       id: 1,
       name: 'Block A',
@@ -38,7 +39,6 @@ const Hostel = () => {
       occupiedRooms: 35,
       availableRooms: 15,
       maintenanceRooms: 3,
-      image: '/assets/images/hostel1.jpg'
     },
     {
       id: 2,
@@ -48,7 +48,6 @@ const Hostel = () => {
       occupiedRooms: 30,
       availableRooms: 15,
       maintenanceRooms: 2,
-      image: '/assets/images/hostel2.jpg'
     },
     {
       id: 3,
@@ -58,7 +57,6 @@ const Hostel = () => {
       occupiedRooms: 20,
       availableRooms: 10,
       maintenanceRooms: 1,
-      image: '/assets/images/hostel3.jpg'
     },
     {
       id: 4,
@@ -68,7 +66,6 @@ const Hostel = () => {
       occupiedRooms: 15,
       availableRooms: 10,
       maintenanceRooms: 1,
-      image: '/assets/images/hostel4.jpg'
     }
   ]);
   const [selectedForAllocation, setSelectedForAllocation] = useState(null);
@@ -182,7 +179,6 @@ const Hostel = () => {
       occupiedRooms: 0,
       availableRooms: 0,
       maintenanceRooms: 0,
-      image: '/assets/images/default-hostel.jpg'
     });
   };
 
@@ -210,7 +206,10 @@ const Hostel = () => {
   }, [selectedHostel, filter, searchTerm]);
 
   return (
+    <>
+     <Header />
     <div className="hostel-container">
+
       {error && (
         <div className="error-message">
           {error}
@@ -232,9 +231,6 @@ const Hostel = () => {
           <div className="hostels-grid">
             {hostels.map(hostel => (
               <div key={hostel.id} className="hostel-card" onClick={() => handleHostelClick(hostel.id)}>
-                <div className="hostel-image">
-                  <img src={hostel.image} alt={hostel.name} />
-                </div>
                 <div className="hostel-info">
                   <h2>{hostel.name}</h2>
                   <p>{hostel.description}</p>
@@ -439,40 +435,6 @@ const Hostel = () => {
               </div>
             </div>
           )}
-
-          {showRoomDetailsModal && selectedRoom && (
-            <div className="modal">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h2>Room {selectedRoom.number} Details</h2>
-                  <button className="close-btn" onClick={() => setShowRoomDetailsModal(false)}>
-                    <i className="fi fi-rr-cross"></i>
-                  </button>
-                </div>
-                <div className="room-details">
-                  <p><strong>Type:</strong> {selectedRoom.type}</p>
-                  <p><strong>Floor:</strong> {selectedRoom.floor}</p>
-                  <p><strong>Capacity:</strong> {selectedRoom.capacity}</p>
-                  <p><strong>Occupied:</strong> {selectedRoom.occupied}</p>
-                  
-                  <h3>Current Occupants</h3>
-                  {selectedRoom.occupants.length > 0 ? (
-                    <div className="occupants-list">
-                      {selectedRoom.occupants.map(student => (
-                        <div key={student.id} className="occupant-card">
-                          <h4>{student.name}</h4>
-                          <p>Matric: {student.matricNumber}</p>
-                          <p>Level: {student.level}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p>No current occupants</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       )}
       {selectedRoom && (
@@ -482,6 +444,8 @@ const Hostel = () => {
         />
       )}
     </div>
+    <Footer />
+  </>
   );
 };
 

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import '../../styles/allocation.css';
 import RoomAvailability from '../../component/RoomAvailability';
+import Header from '../../component/header';
+import Footer from '../../component/footer';
 
 
 
@@ -51,6 +53,21 @@ const Allocation = () => {
       rooms: [
         { id: 1, number: 'A101', type: 'Standard', capacity: 4, occupied: 2 },
         { id: 2, number: 'A102', type: 'Premium', capacity: 2, occupied: 0 },
+        { id: 3, number: 'A103', type: 'Premium', capacity: 2, occupied: 0 },
+        { id: 4, number: 'A104', type: 'Premium', capacity: 2, occupied: 0 },
+        { id: 5, number: 'A105', type: 'Premium', capacity: 2, occupied: 0 },
+        { id: 6, number: 'A106', type: 'Premium', capacity: 2, occupied: 0 },
+        // Add more rooms as needed
+      ]
+    },
+
+    {
+      id: 2,
+      name: 'Block B',
+      description: 'Female Hostel',
+      rooms: [
+        { id: 1, number: 'B101', type: 'Standard', capacity: 4, occupied: 2 },
+        { id: 2, number: 'B102', type: 'Premium', capacity: 2, occupied: 0 },
         // Add more rooms as needed
       ]
     },
@@ -59,8 +76,7 @@ const Allocation = () => {
 
   // Get rooms for selected hostel
   const rooms = selectedHostel ? 
-    hostels.find(h => h.id === parseInt(selectedHostel))?.rooms || [] 
-    : [];
+    hostels.find(h => h.id === parseInt(selectedHostel))?.rooms || [] :[];
 
   // Filter available rooms
   const availableRooms = rooms.filter(room => room.occupied < room.capacity);
@@ -123,6 +139,8 @@ if (formData.personalityTraits.hobbies.length < 1) {
   };
 
   return (
+   <>
+   <Header />
     <div className="allocation-container">
       {!showApplicationForm ? (
         <>
@@ -499,6 +517,8 @@ if (formData.personalityTraits.hobbies.length < 1) {
         </div>
       )}
     </div>
+    <Footer />
+   </>
   );
 };
 

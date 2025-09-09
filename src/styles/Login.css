@@ -186,6 +186,11 @@ form {
   left: 0;
   transition-delay: 1.2s;
 }
+.toggle-panel .fi {
+    font-size: 80px;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
 
 .container.active .toggle-panel.toggle-left {
   left: -50%;
