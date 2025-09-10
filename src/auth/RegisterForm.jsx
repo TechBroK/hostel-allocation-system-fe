@@ -4,7 +4,7 @@ const RegisterForm = () => {
       <form>
         <h1>Registration</h1>
         <div className="input-box">
-          <input type="text" placeholder="UserName" required />
+          <input type="text" placeholder="FullName" required />
           <i className="bx bxs-user"></i>
         </div>
         <div className="input-box">

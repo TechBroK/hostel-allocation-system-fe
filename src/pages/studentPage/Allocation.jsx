@@ -128,7 +128,7 @@ if (formData.personalityTraits.hobbies.length < 1) {
     
     try {
       setIsSubmitting(true);
-      // API call would go here
+      //  call would go here
       console.log('Form submitted:', formData);
     } catch (error) {
       console.error('Submission error:', error);
