@@ -40,8 +40,10 @@ const Hostel = () => {
   useEffect(() => {
     const fetchHostels = async () => {
       try {
-        const response = await hostelApi.getAllHostels();
-  setHostels(Array.isArray(response.data) ? response.data : []);
+    const response = await hostelApi.getAllHostels();
+    // If response.data is an object with a 'data' array, use that
+    const hostelsData = Array.isArray(response.data?.data) ? response.data.data : (Array.isArray(response.data) ? response.data : []);
+    setHostels(hostelsData);
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || "Error loading hostels");
@@ -54,21 +56,14 @@ const Hostel = () => {
   const [selectedForAllocation, setSelectedForAllocation] = useState(null);
   const navigate = useNavigate();
 
+  // Use rooms from the selected hostel object (no extra API call needed)
   const fetchRooms = async (hostelId) => {
     try {
-      const [hostelResponse, roomsResponse] = await Promise.all([
-        hostelApi.getHostelDetails(hostelId),
-        roomApi.getRoomAvailability(hostelId)
-      ]);
-
-      if (!hostelResponse.data) {
-        throw new Error('Hostel not found');
-      }
-
-      return roomsResponse.data;
+      const hostel = hostels.find(h => h.id === hostelId);
+      if (!hostel) throw new Error('Hostel not found');
+      return Array.isArray(hostel.rooms) ? hostel.rooms : [];
     } catch (error) {
-      console.error('Error fetching rooms:', error);
-      setError(error.response?.data?.message || 'Error loading rooms');
+      setError(error.message || 'Error loading rooms');
       return [];
     }
   }
@@ -196,10 +191,14 @@ const Hostel = () => {
         if (filter === 'full') return room.occupied === room.capacity;
         return true;
       })
-      .filter(room => 
-        room.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        room.type.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      .filter(room => {
+        const roomNumber = room.roomNumber || room.number || '';
+        const roomType = room.type || '';
+        return (
+          roomNumber.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+          roomType.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      });
   }, [rooms, filter, searchTerm]);
 
   return (
@@ -230,10 +229,10 @@ const Hostel = () => {
               <div key={hostel.id} className="hostel-card" onClick={() => handleHostelClick(hostel.id)}>
                 <div className="hostel-info">
                   <h2>{hostel.name}</h2>
-                  <p>{hostel.description}</p>
+                  <p>Type: {hostel.type}</p>
                   <div className="hostel-stats">
-                    <span><i className="fi fi-rr-building"></i> {hostel.totalRooms} Rooms</span>
-                    <span><i className="fi fi-rr-door-open"></i> {hostel.availableRooms} Available</span>
+                    <span><i className="fi fi-rr-building"></i> {hostel.capacity} Capacity</span>
+                    <span><i className="fi fi-rr-door-open"></i> {hostel.available} Available</span>
                   </div>
                 </div>
               </div>
@@ -303,7 +302,7 @@ const Hostel = () => {
               <i className="fi fi-rr-building"></i>
               <div className="stat-info">
                 <h3>Total Rooms</h3>
-                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.totalRooms || 0}</p>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.capacity || 0}</p>
               </div>
             </div>
 
@@ -311,7 +310,7 @@ const Hostel = () => {
               <i className="fi fi-rr-key"></i>
               <div className="stat-info">
                 <h3>Occupied</h3>
-                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.occupiedRooms || 0}</p>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.occupied || 0}</p>
               </div>
             </div>
 
@@ -319,7 +318,7 @@ const Hostel = () => {
               <i className="fi fi-rr-door-open"></i>
               <div className="stat-info">
                 <h3>Available</h3>
-                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.availableRooms || 0}</p>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.available || 0}</p>
               </div>
             </div>
 
@@ -327,7 +326,7 @@ const Hostel = () => {
               <i className="fi fi-rr-wrench"></i>
               <div className="stat-info">
                 <h3>Maintenance</h3>
-                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.maintenanceRooms || 0}</p>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.maintenance || 0}</p>
               </div>
             </div>
           </div>

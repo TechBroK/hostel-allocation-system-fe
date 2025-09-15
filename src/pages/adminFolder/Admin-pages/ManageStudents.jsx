@@ -17,7 +17,7 @@ const ManageStudents = () => {
     const fetchStudents = async () => {
       try {
         const response = await adminApi.getStudents();
-        setStudents(response.data);
+  setStudents(Array.isArray(response.data) ? response.data : []);
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || "Error loading students");

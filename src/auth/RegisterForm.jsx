@@ -41,7 +41,7 @@ const RegisterForm = () => {
       });
       
       setTimeout(() => {
-        navigate("/sudent-login");
+        navigate("/login");
       }, 2000);
     } catch (err) {
       setAlert({
