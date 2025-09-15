@@ -1,25 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/topbar";
 import AllocationTable from "../components/AllocationTable";
-import "../../../styles/admin.css"; 
+import { fetchStudents } from "../../../services/adminApi"
+import "../../../styles/admin.css";
 
-const allocations = [
-  { student: "John Doe", matric: "CSC/1234", hostel: "Hostel A", room: "A101" },
-  { student: "Jane Smith", matric: "CSC/5678", hostel: "Hostel B", room: "B202" },
-];
+const AllocationControl = () => {
+  const [students, setStudents] = useState([]);
 
-const AllocationControl = () => (
-  <div className="flex">
-    <Sidebar />
-    <div className="flex-1 ml-64">
-      <Topbar adminName="Admin" />
-      <div className="p-6 admin-section">
-        <h2>Allocation Control</h2>
-        <AllocationTable allocations={allocations} />
+  useEffect(() => {
+    const loadStudents = async () => {
+      try {
+        const data = await fetchStudents();
+        setStudents(data);
+      } catch (err) {
+        console.error("Failed to load students", err);
+      }
+    };
+    loadStudents();
+  }, []);
+
+  return (
+    <div className="flex">
+      <Sidebar />
+      <div className="flex-1 ml-64">
+        <div className="p-6 admin-section">
+          {/* <h2>Allocation Control</h2> */}
+          <AllocationTable allocations={students} />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default AllocationControl;

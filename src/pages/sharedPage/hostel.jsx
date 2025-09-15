@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/hostel.css';
+import Alert from '../../component/Alert';
 import Header from '../../component/header';
 import RoomDetailsModal from '../../component/RoomDetailsModal';
 import Footer from '../../component/footer';
+import { hostelApi, studentApi, roomApi } from '../../utils/api';
 
 const Hostel = () => {
   const [rooms, setRooms] = useState([]);
@@ -29,122 +33,93 @@ const Hostel = () => {
     occupied: 0,
     occupants: []
   });
-  const [hostels, setHostels] = useState([
-    //hostels conponent 
-    {
-      id: 1,
-      name: 'Block A',
-      description: 'Male Hostel',
-      totalRooms: 50,
-      occupiedRooms: 35,
-      availableRooms: 15,
-      maintenanceRooms: 3,
-    },
-    {
-      id: 2,
-      name: 'Block B',
-      description: 'Female Hostel',
-      totalRooms: 45,
-      occupiedRooms: 30,
-      availableRooms: 15,
-      maintenanceRooms: 2,
-    },
-    {
-      id: 3,
-      name: 'Block C',
-      description: 'Postgraduate Block',
-      totalRooms: 30,
-      occupiedRooms: 20,
-      availableRooms: 10,
-      maintenanceRooms: 1,
-    },
-    {
-      id: 4,
-      name: 'Block D',
-      description: 'International Students',
-      totalRooms: 25,
-      occupiedRooms: 15,
-      availableRooms: 10,
-      maintenanceRooms: 1,
-    }
-  ]);
-  const [selectedForAllocation, setSelectedForAllocation] = useState(null);
+  const [hostels, setHostels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [setAlert] = useState({ open: false, type: "info", message: "" });
 
-  const generateRooms = (hostelId) => {
-    try {
-      const hostel = hostels.find(h => h.id === hostelId);
-      if (!hostel) throw new Error('Hostel not found');
-
-      const rooms = [];
-      const totalRooms = hostel.totalRooms;
-      
-      for (let i = 1; i <= totalRooms; i++) {
-        const occupied = Math.floor(Math.random() * (i % 3 === 0 ? 3 : 5));
-        const occupants = Array(occupied).fill(null).map((_, index) => ({
-          id: index + 1,
-          name: `Student ${index + 1}`,
-          matricNumber: `MAT${Math.random().toString(36).substr(2, 6)}`,
-          level: ['100', '200', '300', '400'][Math.floor(Math.random() * 4)]
-        }));
-
-        rooms.push({
-          id: i,
-          number: `${hostelId}${i.toString().padStart(2, '0')}`,
-          capacity: i % 3 === 0 ? 2 : 4,
-          occupied,
-          type: i % 5 === 0 ? 'Premium' : 'Standard',
-          floor: Math.ceil(i / 10),
-          occupants
-        });
+  useEffect(() => {
+    const fetchHostels = async () => {
+      try {
+        const response = await hostelApi.getAllHostels();
+  setHostels(Array.isArray(response.data) ? response.data : []);
+        setLoading(false);
+      } catch (err) {
+        setError(err.response?.data?.message || "Error loading hostels");
+        setLoading(false);
       }
-      return rooms;
+    };
+
+    fetchHostels();
+  }, []);
+  const [selectedForAllocation, setSelectedForAllocation] = useState(null);
+  const navigate = useNavigate();
+
+  const fetchRooms = async (hostelId) => {
+    try {
+      const [hostelResponse, roomsResponse] = await Promise.all([
+        hostelApi.getHostelDetails(hostelId),
+        roomApi.getRoomAvailability(hostelId)
+      ]);
+
+      if (!hostelResponse.data) {
+        throw new Error('Hostel not found');
+      }
+
+      return roomsResponse.data;
     } catch (error) {
-      console.error('Error generating rooms:', error);
+      console.error('Error fetching rooms:', error);
+      setError(error.response?.data?.message || 'Error loading rooms');
       return [];
     }
   }
 
-  const handleHostelClick = (hostelId) => {
-    setSelectedHostel(hostelId);
+  const handleHostelClick = async (hostelId) => {
+    try {
+      setSelectedHostel(hostelId);
+      const fetchedRooms = await fetchRooms(hostelId);
+      setRooms(fetchedRooms);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error loading hostel details");
+    }
   };
 
-  const handleAddRoom = (e) => {
+  const handleAddRoom = async (e) => {
     e.preventDefault();
-    const hostel = hostels.find(h => h.id === selectedHostel);
-    const roomNumber = `${selectedHostel}${(hostel.totalRooms + 1).toString().padStart(2, '0')}`;
-    
-    const roomToAdd = {
-      id: hostel.totalRooms + 1,
-      number: roomNumber,
-      capacity: parseInt(newRoom.capacity),
-      occupied: 0,
-      type: newRoom.type,
-      floor: Math.ceil((hostel.totalRooms + 1) / 10),
-      occupants: []
-    };
+    try {
+      const hostel = hostels.find(h => h.id === selectedHostel);
+      const roomNumber = `${selectedHostel}${(hostel.totalRooms + 1).toString().padStart(2, '0')}`;
+      
+      const roomToAdd = {
+        hostelId: selectedHostel,
+        number: roomNumber,
+        capacity: parseInt(newRoom.capacity),
+        type: newRoom.type,
+        floor: Math.ceil((hostel.totalRooms + 1) / 10)
+      };
 
-    setRooms(prevRooms => [...prevRooms, roomToAdd]);
-    
-    // Update hostel stats
-    setHostels(prevHostels => prevHostels.map(h => {
-      if (h.id === selectedHostel) {
-        return {
-          ...h,
-          totalRooms: h.totalRooms + 1,
-          availableRooms: h.availableRooms + 1
-        };
-      }
-      return h;
-    }));
-    
-    setShowAddRoomModal(false);
-    setNewRoom({
-      number: '',
-      capacity: 4,
-      type: 'Standard',
-      occupied: 0,
-      occupants: []
-    });
+      // Add room through API
+      const response = await roomApi.addRoom(roomToAdd);
+      
+      // Update local state
+      setRooms(prevRooms => [...prevRooms, response.data]);
+      
+      // Fetch updated hostel data to reflect new room counts
+      const updatedHostel = await hostelApi.getHostelDetails(selectedHostel);
+      setHostels(prevHostels => 
+        prevHostels.map(h => h.id === selectedHostel ? updatedHostel.data : h)
+      );
+      
+      setShowAddRoomModal(false);
+      setNewRoom({
+        number: '',
+        capacity: 4,
+        type: 'Standard',
+        occupied: 0,
+        occupants: []
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || "Error adding room");
+    }
   };
 
   const validateHostel = (hostelData) => {
@@ -155,45 +130,67 @@ const Hostel = () => {
     return errors;
   };
 
-  const handleAddHostel = (e) => {
+  const handleAddHostel = async (e) => {
     e.preventDefault();
-    const errors = validateHostel(newHostel);
-    if (Object.keys(errors).length > 0) {
-      setError('Please fix the form errors');
-      return;
-    }
-    const newId = Math.max(...hostels.map(h => h.id)) + 1;
-    
-    const hostelToAdd = {
-      ...newHostel,
-      id: newId,
-      availableRooms: Number(newHostel.totalRooms)
-    };
+    try {
+      const errors = validateHostel(newHostel);
+      if (Object.keys(errors).length > 0) {
+        setError('Please fix the form errors');
+        return;
+      }
+      
+      const hostelToAdd = {
+        ...newHostel,
+        availableRooms: Number(newHostel.totalRooms)
+      };
 
-    setHostels(prev => [...prev, hostelToAdd]);
-    setShowAddHostelModal(false);
-    setNewHostel({
-      name: '',
-      description: '',
-      totalRooms: 0,
-      occupiedRooms: 0,
-      availableRooms: 0,
-      maintenanceRooms: 0,
-    });
+      // Add hostel through API
+      const response = await hostelApi.addHostel(hostelToAdd);
+      
+      // Update local state
+      setHostels(prev => [...prev, response.data]);
+      
+      setShowAddHostelModal(false);
+      setNewHostel({
+        name: '',
+        description: '',
+        totalRooms: 0,
+        occupiedRooms: 0,
+        availableRooms: 0,
+        maintenanceRooms: 0,
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || "Error adding hostel");
+    }
   };
 
   const handleRoomSelection = async (room) => {
     if (!window.confirm(`Are you sure you want to select Room ${room.number}?`)) {
       return;
     }
-    setSelectedForAllocation(room);
-    // Here you would typically make an API call to update the student's allocation status
-    // For now, we'll just console.log
-    console.log(`Room ${room.number} selected for allocation`);
+
+    try {
+      // Create allocation request through API
+      await studentApi.requestAllocation({ roomId: room.id });
+      
+      setSelectedForAllocation(room);
+      setAlert({
+        open: true,
+        type: "success",
+        message: "Room allocation request submitted successfully!"
+      });
+      
+      // Navigate to allocations page after short delay
+      setTimeout(() => {
+        navigate('/allocations');
+      }, 1500);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error requesting room allocation");
+    }
   };
 
   const filteredRooms = React.useMemo(() => {
-    return generateRooms(selectedHostel)
+    return rooms
       .filter(room => {
         if (filter === 'available') return room.occupied < room.capacity;
         if (filter === 'full') return room.occupied === room.capacity;
@@ -203,7 +200,7 @@ const Hostel = () => {
         room.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
         room.type.toLowerCase().includes(searchTerm.toLowerCase())
       );
-  }, [selectedHostel, filter, searchTerm]);
+  }, [rooms, filter, searchTerm]);
 
   return (
     <>
@@ -229,7 +226,7 @@ const Hostel = () => {
           </div>
           
           <div className="hostels-grid">
-            {hostels.map(hostel => (
+            {(Array.isArray(hostels) ? hostels : []).map(hostel => (
               <div key={hostel.id} className="hostel-card" onClick={() => handleHostelClick(hostel.id)}>
                 <div className="hostel-info">
                   <h2>{hostel.name}</h2>
@@ -295,7 +292,7 @@ const Hostel = () => {
             <button className="back-btn" onClick={() => setSelectedHostel(null)}>
               <i className="fi fi-rr-arrow-left"></i> Back to Hostels
             </button>
-            <h1>{hostels.find(h => h.id === selectedHostel).name}</h1>
+            <h1>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.name || ''}</h1>
             <button className="add-room-btn" onClick={() => setShowAddRoomModal(true)}>
               <i className="fi fi-rr-plus"></i> Add Room
             </button>
@@ -306,7 +303,7 @@ const Hostel = () => {
               <i className="fi fi-rr-building"></i>
               <div className="stat-info">
                 <h3>Total Rooms</h3>
-                <p>{hostels.find(h => h.id === selectedHostel).totalRooms}</p>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.totalRooms || 0}</p>
               </div>
             </div>
 
@@ -314,7 +311,7 @@ const Hostel = () => {
               <i className="fi fi-rr-key"></i>
               <div className="stat-info">
                 <h3>Occupied</h3>
-                <p>{hostels.find(h => h.id === selectedHostel).occupiedRooms}</p>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.occupiedRooms || 0}</p>
               </div>
             </div>
 
@@ -322,7 +319,7 @@ const Hostel = () => {
               <i className="fi fi-rr-door-open"></i>
               <div className="stat-info">
                 <h3>Available</h3>
-                <p>{hostels.find(h => h.id === selectedHostel).availableRooms}</p>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.availableRooms || 0}</p>
               </div>
             </div>
 
@@ -330,7 +327,7 @@ const Hostel = () => {
               <i className="fi fi-rr-wrench"></i>
               <div className="stat-info">
                 <h3>Maintenance</h3>
-                <p>{hostels.find(h => h.id === selectedHostel).maintenanceRooms}</p>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.maintenanceRooms || 0}</p>
               </div>
             </div>
           </div>

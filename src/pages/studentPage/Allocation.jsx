@@ -1,8 +1,11 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/allocation.css';
 import RoomAvailability from '../../component/RoomAvailability';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
+import { studentApi, hostelApi, roomApi } from '../../utils/api';
 
 
 
@@ -33,6 +36,7 @@ const Allocation = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const navigate = useNavigate();
   const personalityOptions = {
     sleepSchedule: ['Early Bird (Before 10PM)', 'Night Owl (After 10PM)', 'Variable'],
     studyHabits: ['In Room', 'Library', 'Study Groups', 'Mixed'],
@@ -44,39 +48,59 @@ const Allocation = () => {
   };
 
   
-  // Add hostels data
-  const hostels = [
-    {
-      id: 1,
-      name: 'Block A',
-      description: 'Male Hostel',
-      rooms: [
-        { id: 1, number: 'A101', type: 'Standard', capacity: 4, occupied: 2 },
-        { id: 2, number: 'A102', type: 'Premium', capacity: 2, occupied: 0 },
-        { id: 3, number: 'A103', type: 'Premium', capacity: 2, occupied: 0 },
-        { id: 4, number: 'A104', type: 'Premium', capacity: 2, occupied: 0 },
-        { id: 5, number: 'A105', type: 'Premium', capacity: 2, occupied: 0 },
-        { id: 6, number: 'A106', type: 'Premium', capacity: 2, occupied: 0 },
-        // Add more rooms as needed
-      ]
-    },
+  const [hostels, setHostels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [rooms, setRooms] = useState([]);
+  const [error, setError] = useState(null);
 
-    {
-      id: 2,
-      name: 'Block B',
-      description: 'Female Hostel',
-      rooms: [
-        { id: 1, number: 'B101', type: 'Standard', capacity: 4, occupied: 2 },
-        { id: 2, number: 'B102', type: 'Premium', capacity: 2, occupied: 0 },
-        // Add more rooms as needed
-      ]
-    },
-    // Add more hostels as needed
-  ];
+  // Fetch hostels and user profile on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [hostelsRes, profileRes] = await Promise.all([
+          hostelApi.getAllHostels(),
+          studentApi.getProfile()
+        ]);
+        
+        setHostels(hostelsRes.data);
+        
+        // Pre-fill form with user profile data
+        setFormData(prevData => ({
+          ...prevData,
+          fullName: profileRes.data.fullName,
+          matricNumber: profileRes.data.matricNumber,
+          department: profileRes.data.department,
+          level: profileRes.data.level,
+          gender: profileRes.data.gender,
+          phoneNumber: profileRes.data.phone,
+          email: profileRes.data.email
+        }));
 
-  // Get rooms for selected hostel
-  const rooms = selectedHostel ? 
-    hostels.find(h => h.id === parseInt(selectedHostel))?.rooms || [] :[];
+        setLoading(false);
+      } catch (err) {
+        setError(err.response?.data?.message || "Error loading data");
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Fetch rooms when a hostel is selected
+  useEffect(() => {
+    const fetchRooms = async () => {
+      if (!selectedHostel) return;
+      
+      try {
+        const response = await roomApi.getRoomAvailability(selectedHostel);
+        setRooms(response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || "Error loading rooms");
+      }
+    };
+
+    fetchRooms();
+  }, [selectedHostel]);
 
   // Filter available rooms
   const availableRooms = rooms.filter(room => room.occupied < room.capacity);
@@ -119,20 +143,43 @@ if (formData.personalityTraits.hobbies.length < 1) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
-      //  call would go here
-      console.log('Form submitted:', formData);
+      
+      // Submit allocation request
+      await studentApi.requestAllocation({
+        roomId: selectedRoom.id,
+        hostelId: selectedHostel,
+        studentDetails: {
+          fullName: formData.fullName,
+          matricNumber: formData.matricNumber,
+          department: formData.department,
+          level: formData.level,
+          gender: formData.gender,
+          phoneNumber: formData.phoneNumber,
+          emergencyContact: formData.emergencyContact,
+          email: formData.email
+        },
+        healthInformation: {
+          conditions: formData.healthConditions,
+          specialRequests: formData.specialRequests
+        },
+        personalityProfile: formData.personalityTraits
+      });
+
+      // On success, navigate to profile page
+      navigate('/profile');
     } catch (error) {
       console.error('Submission error:', error);
-      setFormErrors({ submit: 'Failed to submit application' });
+      setFormErrors({ 
+        submit: error.response?.data?.message || 'Failed to submit application' 
+      });
     } finally {
       setIsSubmitting(false);
     }

@@ -1,0 +1,64 @@
+/* alert.css */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin: 16px auto;
+  max-width: 400px;
+  position: relative;
+  animation: fadeIn 0.4s;
+  z-index: 9999;
+}
+.alert i {
+  font-size: 1.5rem;
+}
+.alert-success {
+  background: #e6f9ed;
+  color: #218838;
+  border: 1px solid #b7e4c7;
+}
+.alert-error {
+  background: #fdeaea;
+  color: #c82333;
+  border: 1px solid #f5c6cb;
+}
+.alert-info {
+  background: #eaf4fd;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+.alert-warning {
+  background: #fff4e5;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+.alert-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.2rem;
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  cursor: pointer;
+  padding: 0;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 600px) {
+  .alert {
+    max-width: 95vw;
+    font-size: 0.95rem;
+    padding: 12px 10px;
+  }
+  .alert i {
+    font-size: 1.2rem;
+  }
+}
