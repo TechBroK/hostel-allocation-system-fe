@@ -22,15 +22,39 @@ const Profile = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, complaintsRes] = await Promise.all([
-          studentApi.getProfile(),
-          studentApi.getComplaints()
-        ]);
-        
-        setProfileData(profileRes.data);
+        // Get user from localStorage
+        const userRaw = localStorage.getItem('user');
+        console.log('userRaw from localStorage:', userRaw);
+        const user = userRaw ? JSON.parse(userRaw) : null;
+        console.log('Parsed user:', user);
+        if (!user || !user._id) throw new Error('User not found');
+        console.log('Using user._id:', user._id);
+        // Fetch profile using studentApi
+        const profileRes = await studentApi.getProfile(user._id);
+        console.log('Profile response:', profileRes);
+        // Fetch complaints for this user
+        let complaintsRes = { data: [] };
+        complaintsRes = await studentApi.getComplaints(user._id);
+        // Support new backend structure: { personal: {...}, allocation: {...} }
+        let userProfile = profileRes.data;
+        if (userProfile && userProfile.personal) {
+          // Flatten and map fields for UI
+          userProfile = {
+            ...userProfile.personal,
+            allocationStatus: userProfile.allocation?.status || 'Not Applied',
+            hostel: userProfile.allocation?.hostel || 'Not Allocated',
+            hostelId: userProfile.allocation?.hostelId,
+            roomNumber: userProfile.allocation?.roomNumber || 'Not Assigned',
+            applicationDate: userProfile.allocation?.allocatedAt,
+            // Optionally map personality traits for UI
+            personality: userProfile.personal.personalityTraits || {},
+          };
+        }
+        setProfileData(userProfile);
         setComplaints(complaintsRes.data);
         setLoading(false);
       } catch (err) {
+        console.error('Error loading profile data:', err);
         setAlert({
           open: true,
           type: "error",
@@ -39,7 +63,6 @@ const Profile = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -50,7 +73,8 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      await studentApi.updateProfile(editedData);
+      // Use studentApi.updateProfile with the user's ID
+      await studentApi.updateProfile(profileData._id, editedData);
       setProfileData(editedData);
       setIsEditing(false);
       setAlert({ 
@@ -94,7 +118,8 @@ const Profile = () => {
     }
 
     try {
-      const response = await studentApi.submitComplaint({
+      // Submit complaint for the current user
+      const response = await studentApi.submitComplaint(profileData._id, {
         type: complaintType,
         description: complaintDesc
       });

@@ -211,11 +211,13 @@ if (formData.personalityTraits.hobbies.length < 1) {
               onChange={(e) => setSelectedHostel(e.target.value)}
             >
               <option value="">Select a Hostel Block</option>
-              {hostels.map(hostel => (
-                <option key={hostel.id || hostel._id} value={hostel.id || hostel._id}>
-                  {hostel.name} - {hostel.description}
-                </option>
-              ))}
+              {hostels
+                .filter(h => Array.isArray(h.rooms) && h.rooms.some(r => Number(r.occupied) < Number(r.capacity)))
+                .map(hostel => (
+                  <option key={hostel.id || hostel._id} value={hostel.id || hostel._id}>
+                    {hostel.name} - {hostel.description}
+                  </option>
+                ))}
             </select>
           </div>
 

@@ -16,6 +16,7 @@ const ManageHostels = () => {
     type: '',
     capacity: 1,
     description: '',
+    maintenance: 0,
   });
 
   useEffect(() => {
@@ -38,6 +39,7 @@ const ManageHostels = () => {
     if (!hostelData.type) errors.type = 'Type is required';
     if (!hostelData.capacity || hostelData.capacity < 1) errors.capacity = 'Capacity must be at least 1';
     if (!hostelData.description) errors.description = 'Description is required';
+    if (hostelData.maintenance < 0) errors.maintenance = 'Maintenance cannot be negative';
     return errors;
   };
 
@@ -53,7 +55,8 @@ const ManageHostels = () => {
         name: newHostel.name,
         type: newHostel.type,
         capacity: Number(newHostel.capacity),
-        description: newHostel.description
+        description: newHostel.description,
+        maintenance: Number(newHostel.maintenance) || 0
       };
       const response = await adminApi.addHostel(hostelToAdd);
       setHostels(prev => [...prev, response.data]);
@@ -63,6 +66,7 @@ const ManageHostels = () => {
         type: '',
         capacity: 1,
         description: '',
+        maintenance: 0,
       });
     } catch (err) {
       setError(err.response?.data?.message || "Error adding hostel");
@@ -130,6 +134,15 @@ const ManageHostels = () => {
                       required
                       value={newHostel.description}
                       onChange={(e) => setNewHostel({...newHostel, description: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Maintenance:</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={newHostel.maintenance}
+                      onChange={e => setNewHostel({...newHostel, maintenance: Number(e.target.value)})}
                     />
                   </div>
                   <div className="modal-actions">

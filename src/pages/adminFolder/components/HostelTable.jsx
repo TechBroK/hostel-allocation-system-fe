@@ -9,18 +9,24 @@ const HostelTable = ({ hostels }) => (
       <thead>
         <tr className="bg-gray-100">
           <th className="p-2 border">Name</th>
-          <th className="p-2 border">Total Rooms</th>
+          <th className="p-2 border">Type</th>
+          <th className="p-2 border">Capacity</th>
           <th className="p-2 border">Available</th>
           <th className="p-2 border">Occupied</th>
+          <th className="p-2 border">Maintenance</th>
+          <th className="p-2 border">Rooms</th>
         </tr>
       </thead>
       <tbody>
         {hostels.map((h, i) => (
-          <tr key={i} className="hover:bg-gray-50">
+          <tr key={h.id || i} className="hover:bg-gray-50">
             <td className="p-2 border">{h.name}</td>
-            <td className="p-2 border">{h.totalRooms}</td>
+            <td className="p-2 border">{h.type}</td>
+            <td className="p-2 border">{h.capacity}</td>
             <td className="p-2 border">{h.available}</td>
             <td className="p-2 border">{h.occupied}</td>
+            <td className="p-2 border">{h.maintenance}</td>
+            <td className="p-2 border">{Array.isArray(h.rooms) ? h.rooms.length : 0}</td>
           </tr>
         ))}
       </tbody>
