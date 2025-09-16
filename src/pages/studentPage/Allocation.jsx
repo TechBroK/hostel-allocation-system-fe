@@ -61,9 +61,14 @@ const Allocation = () => {
           hostelApi.getAllHostels(),
           studentApi.getProfile()
         ]);
-        
-        setHostels(hostelsRes.data);
-        
+        // Defensive: support both { data: [...] } and [...]
+        const hostelList = Array.isArray(hostelsRes.data)
+          ? hostelsRes.data
+          : Array.isArray(hostelsRes.data.data)
+            ? hostelsRes.data.data
+            : [];
+        setHostels(hostelList);
+
         // Pre-fill form with user profile data
         setFormData(prevData => ({
           ...prevData,
@@ -90,20 +95,28 @@ const Allocation = () => {
   useEffect(() => {
     const fetchRooms = async () => {
       if (!selectedHostel) return;
-      
       try {
-        const response = await roomApi.getRoomAvailability(selectedHostel);
-        setRooms(response.data);
+        // Find the selected hostel object
+        const hostelObj = hostels.find(h => h.id === selectedHostel || h._id === selectedHostel);
+        // If backend already provides rooms nested, use them directly
+        if (hostelObj && Array.isArray(hostelObj.rooms)) {
+          setRooms(hostelObj.rooms);
+        } else {
+          // Fallback: fetch from API
+          const response = await roomApi.getRoomAvailability(selectedHostel);
+          setRooms(Array.isArray(response.data) ? response.data : (response.data.data || []));
+        }
       } catch (err) {
         setError(err.response?.data?.message || "Error loading rooms");
       }
     };
-
     fetchRooms();
-  }, [selectedHostel]);
+  }, [selectedHostel, hostels]);
 
   // Filter available rooms
-  const availableRooms = rooms.filter(room => room.occupied < room.capacity);
+  const availableRooms = Array.isArray(rooms)
+    ? rooms.filter(room => Number(room.occupied) < Number(room.capacity))
+    : [];
 
   const validateForm = () => {
     const errors = {};
@@ -199,7 +212,7 @@ if (formData.personalityTraits.hobbies.length < 1) {
             >
               <option value="">Select a Hostel Block</option>
               {hostels.map(hostel => (
-                <option key={hostel.id} value={hostel.id}>
+                <option key={hostel.id || hostel._id} value={hostel.id || hostel._id}>
                   {hostel.name} - {hostel.description}
                 </option>
               ))}
@@ -208,26 +221,30 @@ if (formData.personalityTraits.hobbies.length < 1) {
 
           {selectedHostel && (
             <div className="available-rooms-grid">
-              {availableRooms.map(room => (
-                <div key={room.id} className="available-room-card">
-                  <h3>Room {room.number}</h3>
-                  <p className="room-type">{room.type}</p>
-                  <RoomAvailability occupied={room.occupied} capacity={room.capacity} />
-                  <div className="room-details">
-                    <p>Available Spaces: {room.capacity - room.occupied}</p>
-                    <p>Floor: {Math.ceil(parseInt(room.number) / 10)}</p>
+              {availableRooms.length === 0 ? (
+                <div className="no-rooms-message">No available rooms in this hostel.</div>
+              ) : (
+                availableRooms.map(room => (
+                  <div key={room.id || room._id} className="available-room-card">
+                    <h3>Room {room.number || room.roomNumber}</h3>
+                    <p className="room-type">{room.type}</p>
+                    <RoomAvailability occupied={room.occupied} capacity={room.capacity} />
+                    <div className="room-details">
+                      <p>Available Spaces: {Number(room.capacity) - Number(room.occupied)}</p>
+                      <p>Floor: {room.floor || Math.ceil(Number(room.number || room.roomNumber) / 10)}</p>
+                    </div>
+                    <button 
+                      className="apply-btn"
+                      onClick={() => {
+                        setSelectedRoom(room);
+                        setShowApplicationForm(true);
+                      }}
+                    >
+                      Apply for This Room
+                    </button>
                   </div>
-                  <button 
-                    className="apply-btn"
-                    onClick={() => {
-                      setSelectedRoom(room);
-                      setShowApplicationForm(true);
-                    }}
-                  >
-                    Apply for This Room
-                  </button>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
         </>

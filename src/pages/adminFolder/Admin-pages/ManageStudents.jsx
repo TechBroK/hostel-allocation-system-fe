@@ -17,7 +17,13 @@ const ManageStudents = () => {
     const fetchStudents = async () => {
       try {
         const response = await adminApi.getStudents();
-  setStudents(Array.isArray(response.data) ? response.data : []);
+        // Support paginated response: students in response.data.items
+        const studentsArr = Array.isArray(response.data?.items)
+          ? response.data.items
+          : Array.isArray(response.data)
+            ? response.data
+            : [];
+        setStudents(studentsArr);
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || "Error loading students");
@@ -31,7 +37,9 @@ const ManageStudents = () => {
   const handleAdd = async (newStudent) => {
     try {
       const response = await adminApi.addStudent(newStudent);
-      setStudents(prev => [...prev, response.data]);
+      // Support both response.data and response.data.item for created student
+      const createdStudent = response.data?.item || response.data;
+      setStudents(prev => [...prev, createdStudent]);
       setShowAddModal(false);
     } catch (err) {
       setError(err.response?.data?.message || "Error adding student");
@@ -68,7 +76,7 @@ const ManageStudents = () => {
     <div className="flex">
       <Sidebar />
       <div className="flex-1">
-        <Topbar adminName="Admin" />
+        {/* Only render Topbar once at the top-level layout, not inside nested components */}
         <div className="admin-main">
           {/* Header */}
           <div className="admin-section-header">
@@ -105,10 +113,7 @@ const ManageStudents = () => {
             <div className="loading">Loading students...</div>
           ) : (
             <StudentTable 
-              students={students.filter(student => 
-                student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                student.matricNumber.toLowerCase().includes(searchTerm.toLowerCase())
-              )}
+              students={students}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />

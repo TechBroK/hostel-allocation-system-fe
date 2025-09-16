@@ -41,7 +41,7 @@ const RegisterForm = () => {
       });
       
       setTimeout(() => {
-        navigate("/login");
+        navigate("/student-login");
       }, 2000);
     } catch (err) {
       setAlert({

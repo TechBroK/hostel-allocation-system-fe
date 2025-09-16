@@ -13,11 +13,9 @@ const ManageHostels = () => {
   const [showAddHostelModal, setShowAddHostelModal] = useState(false);
   const [newHostel, setNewHostel] = useState({
     name: '',
+    type: '',
+    capacity: 1,
     description: '',
-    totalRooms: 0,
-    occupiedRooms: 0,
-    availableRooms: 0,
-    maintenanceRooms: 0,
   });
 
   useEffect(() => {
@@ -37,8 +35,9 @@ const ManageHostels = () => {
   const validateHostel = (hostelData) => {
     const errors = {};
     if (!hostelData.name) errors.name = 'Name is required';
-    if (!hostelData.totalRooms) errors.totalRooms = 'Total rooms is required';
-    if (hostelData.totalRooms < 1) errors.totalRooms = 'Must have at least 1 room';
+    if (!hostelData.type) errors.type = 'Type is required';
+    if (!hostelData.capacity || hostelData.capacity < 1) errors.capacity = 'Capacity must be at least 1';
+    if (!hostelData.description) errors.description = 'Description is required';
     return errors;
   };
 
@@ -51,19 +50,19 @@ const ManageHostels = () => {
         return;
       }
       const hostelToAdd = {
-        ...newHostel,
-        availableRooms: Number(newHostel.totalRooms)
+        name: newHostel.name,
+        type: newHostel.type,
+        capacity: Number(newHostel.capacity),
+        description: newHostel.description
       };
       const response = await adminApi.addHostel(hostelToAdd);
       setHostels(prev => [...prev, response.data]);
       setShowAddHostelModal(false);
       setNewHostel({
         name: '',
+        type: '',
+        capacity: 1,
         description: '',
-        totalRooms: 0,
-        occupiedRooms: 0,
-        availableRooms: 0,
-        maintenanceRooms: 0,
       });
     } catch (err) {
       setError(err.response?.data?.message || "Error adding hostel");
@@ -74,7 +73,7 @@ const ManageHostels = () => {
     <div className="flex">
       <Sidebar />
       <div className="flex-1">
-        <Topbar adminName="Admin" />
+
         <div className="p-6 admin-section">
           <h2>Manage Hostels</h2>
           {error && (
@@ -102,22 +101,35 @@ const ManageHostels = () => {
                     />
                   </div>
                   <div className="form-group">
+                    <label>Type:</label>
+                    <select
+                      required
+                      value={newHostel.type}
+                      onChange={e => setNewHostel({...newHostel, type: e.target.value})}
+                    >
+                      <option value="">Select Type</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="mixed">Mixed</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Capacity:</label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      value={newHostel.capacity}
+                      onChange={e => setNewHostel({...newHostel, capacity: Number(e.target.value)})}
+                    />
+                  </div>
+                  <div className="form-group">
                     <label>Description:</label>
                     <input
                       type="text"
                       required
                       value={newHostel.description}
                       onChange={(e) => setNewHostel({...newHostel, description: e.target.value})}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Total Rooms:</label>
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      value={newHostel.totalRooms}
-                      onChange={(e) => setNewHostel({...newHostel, totalRooms: Number(e.target.value)})}
                     />
                   </div>
                   <div className="modal-actions">

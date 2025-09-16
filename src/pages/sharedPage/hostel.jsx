@@ -40,17 +40,20 @@ const Hostel = () => {
   useEffect(() => {
     const fetchHostels = async () => {
       try {
-    const response = await hostelApi.getAllHostels();
-    // If response.data is an object with a 'data' array, use that
-    const hostelsData = Array.isArray(response.data?.data) ? response.data.data : (Array.isArray(response.data) ? response.data : []);
-    setHostels(hostelsData);
+        const response = await hostelApi.getAllHostels();
+        // Support paginated or array response
+        const hostelsData = Array.isArray(response.data?.data)
+          ? response.data.data
+          : Array.isArray(response.data)
+            ? response.data
+            : [];
+        setHostels(hostelsData);
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || "Error loading hostels");
         setLoading(false);
       }
     };
-
     fetchHostels();
   }, []);
   const [selectedForAllocation, setSelectedForAllocation] = useState(null);
@@ -59,8 +62,9 @@ const Hostel = () => {
   // Use rooms from the selected hostel object (no extra API call needed)
   const fetchRooms = async (hostelId) => {
     try {
-      const hostel = hostels.find(h => h.id === hostelId);
+      const hostel = hostels.find(h => h._id === hostelId || h.id === hostelId);
       if (!hostel) throw new Error('Hostel not found');
+      // If backend provides rooms array, use it; else fallback to []
       return Array.isArray(hostel.rooms) ? hostel.rooms : [];
     } catch (error) {
       setError(error.message || 'Error loading rooms');
@@ -72,7 +76,7 @@ const Hostel = () => {
     try {
       setSelectedHostel(hostelId);
       const fetchedRooms = await fetchRooms(hostelId);
-      setRooms(fetchedRooms);
+      setRooms(Array.isArray(fetchedRooms) ? fetchedRooms : []);
     } catch (err) {
       setError(err.response?.data?.message || "Error loading hostel details");
     }
@@ -81,29 +85,25 @@ const Hostel = () => {
   const handleAddRoom = async (e) => {
     e.preventDefault();
     try {
-      const hostel = hostels.find(h => h.id === selectedHostel);
-      const roomNumber = `${selectedHostel}${(hostel.totalRooms + 1).toString().padStart(2, '0')}`;
-      
+      const hostel = hostels.find(h => (h._id || h.id) === selectedHostel);
+      if (!hostel) throw new Error('Hostel not found');
+      // Generate a room number based on timestamp for uniqueness
+      const roomNumber = `R${Date.now().toString().slice(-5)}`;
       const roomToAdd = {
-        hostelId: selectedHostel,
+        hostelId: hostel._id || hostel.id,
         number: roomNumber,
-        capacity: parseInt(newRoom.capacity),
-        type: newRoom.type,
-        floor: Math.ceil((hostel.totalRooms + 1) / 10)
+        capacity: Number(newRoom.capacity) || 0,
+        type: newRoom.type
       };
-
       // Add room through API
-      const response = await roomApi.addRoom(roomToAdd);
-      
-      // Update local state
-      setRooms(prevRooms => [...prevRooms, response.data]);
-      
-      // Fetch updated hostel data to reflect new room counts
-      const updatedHostel = await hostelApi.getHostelDetails(selectedHostel);
-      setHostels(prevHostels => 
-        prevHostels.map(h => h.id === selectedHostel ? updatedHostel.data : h)
+      await roomApi.addRoom(roomToAdd);
+      // Fetch updated hostel data to reflect new room counts and rooms
+      const updatedHostel = await hostelApi.getHostelDetails(hostel._id || hostel.id);
+      setHostels(prevHostels =>
+        prevHostels.map(h => (h._id || h.id) === (hostel._id || hostel.id) ? updatedHostel.data : h)
       );
-      
+      // Update rooms state from updatedHostel if available
+      setRooms(Array.isArray(updatedHostel.data.rooms) ? updatedHostel.data.rooms : []);
       setShowAddRoomModal(false);
       setNewRoom({
         number: '',
@@ -113,7 +113,7 @@ const Hostel = () => {
         occupants: []
       });
     } catch (err) {
-      setError(err.response?.data?.message || "Error adding room");
+      setError(err.response?.data?.message || err.message || "Error adding room");
     }
   };
 
@@ -209,7 +209,7 @@ const Hostel = () => {
       {error && (
         <div className="error-message">
           {error}
-          <button onClick={() => setError(null)}>Dismiss</button>
+          <button onClick={() => setError(null)}className="add-hostel-btn">Dismiss</button>
         </div>
       )}
       {!selectedHostel ? (
@@ -226,13 +226,13 @@ const Hostel = () => {
           
           <div className="hostels-grid">
             {(Array.isArray(hostels) ? hostels : []).map(hostel => (
-              <div key={hostel.id} className="hostel-card" onClick={() => handleHostelClick(hostel.id)}>
+              <div key={hostel._id || hostel.id} className="hostel-card" onClick={() => handleHostelClick(hostel._id || hostel.id)}>
                 <div className="hostel-info">
                   <h2>{hostel.name}</h2>
                   <p>Type: {hostel.type}</p>
                   <div className="hostel-stats">
                     <span><i className="fi fi-rr-building"></i> {hostel.capacity} Capacity</span>
-                    <span><i className="fi fi-rr-door-open"></i> {hostel.available} Available</span>
+                    <span><i className="fi fi-rr-door-open"></i> {hostel.occupancy?.availableBeds ?? hostel.available ?? 0} Available</span>
                   </div>
                 </div>
               </div>
@@ -291,7 +291,7 @@ const Hostel = () => {
             <button className="back-btn" onClick={() => setSelectedHostel(null)}>
               <i className="fi fi-rr-arrow-left"></i> Back to Hostels
             </button>
-            <h1>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.name || ''}</h1>
+            <h1>{(Array.isArray(hostels) ? hostels : []).find(h => (h._id || h.id) === selectedHostel)?.name || ''}</h1>
             <button className="add-room-btn" onClick={() => setShowAddRoomModal(true)}>
               <i className="fi fi-rr-plus"></i> Add Room
             </button>
@@ -301,32 +301,32 @@ const Hostel = () => {
             <div className="stat-card">
               <i className="fi fi-rr-building"></i>
               <div className="stat-info">
-                <h3>Total Rooms</h3>
-                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.capacity || 0}</p>
+                <h3>Capacity</h3>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => (h._id || h.id) === selectedHostel)?.capacity || 0}</p>
               </div>
             </div>
 
             <div className="stat-card">
               <i className="fi fi-rr-key"></i>
               <div className="stat-info">
-                <h3>Occupied</h3>
-                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.occupied || 0}</p>
+                <h3>Occupied Beds</h3>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => (h._id || h.id) === selectedHostel)?.occupancy?.occupiedBeds ?? 0}</p>
               </div>
             </div>
 
             <div className="stat-card">
               <i className="fi fi-rr-door-open"></i>
               <div className="stat-info">
-                <h3>Available</h3>
-                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.available || 0}</p>
+                <h3>Available Beds</h3>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => (h._id || h.id) === selectedHostel)?.occupancy?.availableBeds ?? 0}</p>
               </div>
             </div>
 
             <div className="stat-card">
               <i className="fi fi-rr-wrench"></i>
               <div className="stat-info">
-                <h3>Maintenance</h3>
-                <p>{(Array.isArray(hostels) ? hostels : []).find(h => h.id === selectedHostel)?.maintenance || 0}</p>
+                <h3>Total Rooms</h3>
+                <p>{(Array.isArray(hostels) ? hostels : []).find(h => (h._id || h.id) === selectedHostel)?.occupancy?.totalRooms ?? 0}</p>
               </div>
             </div>
           </div>

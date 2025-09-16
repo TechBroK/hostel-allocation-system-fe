@@ -15,7 +15,6 @@ const Reports = () => {
     <div className="flex">
       <Sidebar />
       <div className="flex-1 ml-64">
-        <Topbar adminName="Admin" />
         <div className="admin-section p-6">
           <h2 className="text-2xl font-bold mb-4">Reports</h2>
           <p>Download and view allocation and hostel reports here.</p>

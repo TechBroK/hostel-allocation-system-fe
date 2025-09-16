@@ -89,7 +89,7 @@ export const adminApi = {
     getDashboardStats: () => api.get('/admin/dashboard/stats'),
     
     // Student management
-    getStudents: () => api.get('/admin/students'),
+    getStudents: () => api.get('/students'),
     addStudent: (data) => api.post('/admin/students', data),
     updateStudent: (id, data) => api.put(`/admin/students/${id}`, data),
     deleteStudent: (id) => api.delete(`/admin/students/${id}`),

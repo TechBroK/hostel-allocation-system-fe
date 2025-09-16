@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import Topbar from "../components/topbar";
 import AllocationTable from "../components/AllocationTable";
 import { fetchStudents } from "../../../services/adminApi"
 import "../../../styles/admin.css";
@@ -11,8 +10,8 @@ const AllocationControl = () => {
   useEffect(() => {
     const loadStudents = async () => {
       try {
-        const data = await fetchStudents();
-        setStudents(data);
+  const studentsArr = await fetchStudents();
+  setStudents(studentsArr);
       } catch (err) {
         console.error("Failed to load students", err);
       }
