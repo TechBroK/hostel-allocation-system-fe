@@ -81,15 +81,31 @@ const RegisterForm = () => {
           <i className="bx bxs-envelope"></i>
         </div>
 
-        <div className="input-box">
+        <div className="input-box input-box-flex">
           <input
             type="text"
             name="matricNumber"
             placeholder="Matric Number"
             value={formData.matricNumber}
             onChange={handleChange}
+            className="matric-input"
+            required
           />
-          <i className="bx bxs-id-card"></i>
+          <select
+            name="level"
+            value={formData.level}
+            onChange={handleChange}
+            className="level-dropdown"
+            required
+          >
+            <option value="">Level</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+            <option value="300">300</option>
+            <option value="400">400</option>
+            <option value="500">500</option>
+          </select>
+          <i className="bx bxs-id-card idcard-icon"></i>
         </div>
         <div className="input-box">
           <input

@@ -1,3 +1,51 @@
+/* Flex input box for matric + level */
+.input-box.input-box-flex {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+}
+
+.matric-input {
+  width: 80%;
+  min-width: 290px;
+  max-width: 320px;
+  padding: 15px 10px 15px 20px;
+  background: #eee;
+  border-radius: 10px;
+  height: 35px;
+  border: none;
+  outline: none;
+  margin-left:60px;
+  font-size: 18px;
+  color: #333;
+  font-weight: 400;
+}
+
+.level-dropdown {
+  width: 38%;
+  min-width: 80px;
+  max-width: 110px;
+  height: 35px;
+  background: #eee;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-size: 18px;
+  color: #333;
+  font-weight: 400;
+  padding: 0 10px;
+  margin-left: 5px;
+}
+
+.idcard-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 25px;
+  color: #888;
+}
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;900&display=swap');
 
 * {
