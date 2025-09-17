@@ -22,13 +22,18 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
-  margin-left: 10px;
+  font-size: 1rem;
+
 }
 
-.logout-btn {
-  color: #c00;
+.logout-btn{
+  color: #ffff;
   font-weight: bold;
+}
+
+.logout-btn:hover {
+  color: #ac3939;
+ 
 }
 .admin-main {
   margin-left: 70px;

@@ -38,16 +38,34 @@ const Profile = () => {
         // Support new backend structure: { personal: {...}, allocation: {...} }
         let userProfile = profileRes.data;
         if (userProfile && userProfile.personal) {
-          // Flatten and map fields for UI
+          // Map personality traits to display-friendly format
+          let personality = null;
+          if (userProfile.personal.personalityTraits) {
+            const traitsObj = userProfile.personal.personalityTraits;
+            personality = {
+              type: 'Custom',
+              traits: Object.entries(traitsObj).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`),
+              bio: '',
+            };
+          }
           userProfile = {
-            ...userProfile.personal,
+            // Use correct property names from backend
+            _id: userProfile.personal._id,
+            name: userProfile.personal.fullName || userProfile.personal.name || '',
+            regNumber: userProfile.personal.matricNumber || userProfile.personal.regNumber || '',
+            email: userProfile.personal.email || '',
+            phone: userProfile.personal.phone || '',
+            gender: userProfile.personal.gender || '',
+            level: userProfile.personal.level || '',
+            department: userProfile.personal.department || '',
+            profilePic: userProfile.personal.profilePic || '',
+            // Allocation fields
             allocationStatus: userProfile.allocation?.status || 'Not Applied',
             hostel: userProfile.allocation?.hostel || 'Not Allocated',
             hostelId: userProfile.allocation?.hostelId,
             roomNumber: userProfile.allocation?.roomNumber || 'Not Assigned',
             applicationDate: userProfile.allocation?.allocatedAt,
-            // Optionally map personality traits for UI
-            personality: userProfile.personal.personalityTraits || {},
+            personality,
           };
         }
         setProfileData(userProfile);

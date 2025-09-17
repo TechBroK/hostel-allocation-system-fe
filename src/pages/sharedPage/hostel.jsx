@@ -161,14 +161,17 @@ const Hostel = () => {
   };
 
   const handleRoomSelection = async (room) => {
-    if (!window.confirm(`Are you sure you want to select Room ${room.number}?`)) {
+    if (!window.confirm(`Are you sure you want to select Room ${room.number || room.roomNumber}?`)) {
       return;
     }
 
     try {
-      // Create allocation request through API
-      await studentApi.requestAllocation({ roomId: room.id });
-      setSelectedForAllocation(room);
+      // Fetch full room details from API
+      const response = await roomApi.getRoomDetails(room.id);
+      const fullRoom = response.data;
+      // Create allocation request through API using the full room id
+      await studentApi.requestAllocation({ roomId: fullRoom.id });
+      setSelectedForAllocation(fullRoom);
       setAlert({
         open: true,
         type: "success",

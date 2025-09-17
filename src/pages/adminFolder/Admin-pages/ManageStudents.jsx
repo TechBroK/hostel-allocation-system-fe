@@ -12,6 +12,7 @@ const ManageStudents = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  // Removed newStudentId, backend will generate _id
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -34,10 +35,13 @@ const ManageStudents = () => {
     fetchStudents();
   }, []);
 
+  // Add Student now uses PUT /api/admin/students/{studentId} (updateStudentStatus)
   const handleAdd = async (newStudent) => {
     try {
-      const response = await adminApi.addStudent(newStudent);
-      // Support both response.data and response.data.item for created student
+      // Remove id/_id, let backend generate ObjectId
+      const { id, _id, ...studentData } = newStudent;
+      console.log('Add Student request payload:', studentData);
+      const response = await adminApi.addStudent(studentData);
       const createdStudent = response.data?.item || response.data;
       setStudents(prev => [...prev, createdStudent]);
       setShowAddModal(false);
@@ -124,6 +128,12 @@ const ManageStudents = () => {
             <div className="modal">
               <div className="modal-content">
                 <h2>Add New Student</h2>
+                {error && (
+                  <div className="error-message" style={{ marginBottom: '1rem' }}>
+                    {error}
+                    <button onClick={() => setError(null)} style={{ marginLeft: 8 }}>Dismiss</button>
+                  </div>
+                )}
                 <form onSubmit={e => {
                   e.preventDefault();
                   const formData = new FormData(e.target);
@@ -133,7 +143,9 @@ const ManageStudents = () => {
                     matricNumber: formData.get('matricNumber'),
                     department: formData.get('department'),
                     level: formData.get('level'),
-                    phone: formData.get('phone')
+                    phone: formData.get('phone'),
+                    gender: formData.get('gender'),
+                    allocationStatus: formData.get('allocationStatus')
                   });
                 }}>
                   <div className="form-group">
@@ -166,6 +178,24 @@ const ManageStudents = () => {
                   <div className="form-group">
                     <label>Phone:</label>
                     <input type="tel" name="phone" required />
+                  </div>
+                  <div className="form-group">
+                    <label>Gender:</label>
+                    <select name="gender" required>
+                      <option value="">Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Allocation Status:</label>
+                    <select name="allocationStatus" required>
+                      <option value="">Select Status</option>
+                      <option value="pending">Pending</option>
+                      <option value="allocated">Allocated</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
                   </div>
                   <div className="modal-actions">
                     <button type="button" className="cancel-btn" onClick={() => setShowAddModal(false)}>

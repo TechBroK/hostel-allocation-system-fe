@@ -17,13 +17,27 @@ const ManageHostels = () => {
     capacity: 1,
     description: '',
     maintenance: 0,
+    rooms: []
+  });
+
+  const [newRoom, setNewRoom] = useState({
+    roomNumber: '',
+    type: '',
+    capacity: 1,
+    occupied: 0
   });
 
   useEffect(() => {
     const fetchHostels = async () => {
       try {
         const response = await adminApi.getHostels();
-        setHostels(Array.isArray(response.data) ? response.data : []);
+        // The API returns { data: [ ...hostels... ], meta: {...} }
+        const hostelsArr = Array.isArray(response.data?.data)
+          ? response.data.data
+          : Array.isArray(response.data)
+            ? response.data
+            : [];
+        setHostels(hostelsArr);
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || "Error loading hostels");
@@ -56,7 +70,8 @@ const ManageHostels = () => {
         type: newHostel.type,
         capacity: Number(newHostel.capacity),
         description: newHostel.description,
-        maintenance: Number(newHostel.maintenance) || 0
+        maintenance: Number(newHostel.maintenance) || 0,
+        rooms: newHostel.rooms
       };
       const response = await adminApi.addHostel(hostelToAdd);
       setHostels(prev => [...prev, response.data]);
@@ -67,10 +82,22 @@ const ManageHostels = () => {
         capacity: 1,
         description: '',
         maintenance: 0,
+        rooms: []
       });
+      setNewRoom({ roomNumber: '', type: '', capacity: 1, occupied: 0 });
     } catch (err) {
       setError(err.response?.data?.message || "Error adding hostel");
     }
+  };
+
+  const handleAddRoom = (e) => {
+    e.preventDefault();
+    if (!newRoom.roomNumber || !newRoom.type || !newRoom.capacity) return;
+    setNewHostel(prev => ({
+      ...prev,
+      rooms: [...(prev.rooms || []), { ...newRoom, capacity: Number(newRoom.capacity), occupied: Number(newRoom.occupied) }]
+    }));
+    setNewRoom({ roomNumber: '', type: '', capacity: 1, occupied: 0 });
   };
 
   return (
@@ -145,6 +172,63 @@ const ManageHostels = () => {
                       onChange={e => setNewHostel({...newHostel, maintenance: Number(e.target.value)})}
                     />
                   </div>
+                  {/* Add Room Section */}
+                  <div className="form-group" style={{ border: '1px solid #eee', padding: 10, marginBottom: 10 }}>
+                    <label style={{ fontWeight: 'bold' }}>Add Room(s):</label>
+                    <form onSubmit={handleAddRoom} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        placeholder="Room Number"
+                        value={newRoom.roomNumber}
+                        onChange={e => setNewRoom({ ...newRoom, roomNumber: e.target.value })}
+                        required
+                        style={{ width: 90 }}
+                      />
+                      <select
+                        value={newRoom.type}
+                        onChange={e => setNewRoom({ ...newRoom, type: e.target.value })}
+                        required
+                        style={{ width: 90 }}
+                      >
+                        <option value="">Type</option>
+                        <option value="Standard">Standard</option>
+                        <option value="Premium">Premium</option>
+                      </select>
+                      <input
+                        type="number"
+                        placeholder="Capacity"
+                        min="1"
+                        value={newRoom.capacity}
+                        onChange={e => setNewRoom({ ...newRoom, capacity: Number(e.target.value) })}
+                        required
+                        style={{ width: 70 }}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Occupied"
+                        min="0"
+                        value={newRoom.occupied}
+                        onChange={e => setNewRoom({ ...newRoom, occupied: Number(e.target.value) })}
+                        required
+                        style={{ width: 70 }}
+                      />
+                      <button type="submit" style={{ padding: '2px 8px' }}>Add Room</button>
+                    </form>
+                    {/* List of added rooms */}
+                    {Array.isArray(newHostel.rooms) && newHostel.rooms.length > 0 && (
+                      <div style={{ marginTop: 8 }}>
+                        <strong>Rooms Added:</strong>
+                        <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                          {newHostel.rooms.map((room, idx) => (
+                            <li key={idx} style={{ fontSize: 13, marginBottom: 2 }}>
+                              Room {room.roomNumber} ({room.type}) - Capacity: {room.capacity}, Occupied: {room.occupied}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="modal-actions">
                     <button type="button" className="cancel-btn" onClick={() => setShowAddHostelModal(false)}>
                       <i className="fi fi-rr-cross"></i> Cancel

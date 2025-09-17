@@ -104,6 +104,7 @@ export const adminApi = {
 
     // Student management
     getStudents: () => api.get('/admin/students'),
+    getUnallocatedStudents: () => api.get('/admin/students/unallocated'),
     updateStudentStatus: (studentId, data) => api.put(`/admin/students/${studentId}`, data),
 
     // Hostel management

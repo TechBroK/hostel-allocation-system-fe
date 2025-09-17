@@ -1,22 +1,33 @@
+
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import AllocationTable from "../components/AllocationTable";
-import { fetchStudents } from "../../../services/adminApi"
+import { adminApi } from "../../../utils/api";
 import "../../../styles/admin.css";
 
+
 const AllocationControl = () => {
-  const [students, setStudents] = useState([]);
+  const [allocations, setAllocations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadStudents = async () => {
+    const fetchAllocations = async () => {
       try {
-  const studentsArr = await fetchStudents();
-  setStudents(studentsArr);
+        const response = await adminApi.getAllocations(); // Should call /api/admin/allocations
+        const dataArr = Array.isArray(response.data?.data)
+          ? response.data.data
+          : Array.isArray(response.data)
+            ? response.data
+            : [];
+        setAllocations(dataArr);
+        setLoading(false);
       } catch (err) {
-        console.error("Failed to load students", err);
+        setError(err.response?.data?.message || "Failed to load allocations");
+        setLoading(false);
       }
     };
-    loadStudents();
+    fetchAllocations();
   }, []);
 
   return (
@@ -24,8 +35,14 @@ const AllocationControl = () => {
       <Sidebar />
       <div className="flex-1 ml-64">
         <div className="p-6 admin-section">
-          {/* <h2>Allocation Control</h2> */}
-          <AllocationTable allocations={students} />
+          {error && (
+            <div className="error-message">{error}</div>
+          )}
+          {loading ? (
+            <div className="loading">Loading allocations...</div>
+          ) : (
+            <AllocationTable allocations={allocations} />
+          )}
         </div>
       </div>
     </div>

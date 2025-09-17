@@ -1,10 +1,37 @@
-import React, { useState } from "react";
-import "../../../styles/admin.css"; 
 
-const StudentTable = ({ students, onEdit, onDelete }) => {
+import React, { useState, useEffect } from "react";
+import { adminApi } from "../../../utils/api";
+import "../../../styles/admin.css";
+
+const StudentTable = () => {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await adminApi.getStudents();
+        // Support paginated response: students in response.data.data or response.data.items
+        const studentsArr = Array.isArray(response.data?.data)
+          ? response.data.data
+          : Array.isArray(response.data?.items)
+            ? response.data.items
+            : Array.isArray(response.data)
+              ? response.data
+              : [];
+        setStudents(studentsArr);
+        setLoading(false);
+      } catch (err) {
+        setError(err.response?.data?.message || "Error loading students");
+        setLoading(false);
+      }
+    };
+    fetchStudents();
+  }, []);
 
   const handleEdit = (student) => {
     setSelectedStudent(student);
@@ -21,59 +48,65 @@ const StudentTable = ({ students, onEdit, onDelete }) => {
 
   const handleSubmitEdit = (e) => {
     e.preventDefault();
-    onEdit(selectedStudent._id, editFormData);
+    // You may want to implement update logic here
     setShowModal(false);
   };
 
   return (
     <>
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Matric</th>
-            <th>Email</th>
-            <th>Department</th>
-            <th>Level</th>
-            <th>Phone</th>
-            <th>Room</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {students.length === 0 ? (
+      {error && (
+        <div className="error-message">{error}</div>
+      )}
+      {loading ? (
+        <div className="loading">Loading students...</div>
+      ) : (
+        <table className="admin-table">
+          <thead>
             <tr>
-              <td colSpan="8" style={{ textAlign: "center" }}>No students found</td>
+              <th>Name</th>
+              <th>Matric</th>
+              <th>Email</th>
+              <th>Department</th>
+              <th>Level</th>
+              <th>Phone</th>
+              <th>Gender</th>
+              <th>Role</th>
+              <th>Allocation Status</th>
+              <th>Actions</th>
             </tr>
-          ) : (
-            students.map((student) => (
-              <tr key={student._id}>
-                <td>{student.fullName}</td>
-                <td>{student.matricNumber}</td>
-                <td>{student.email}</td>
-                <td>{student.department}</td>
-                <td>{student.level}</td>
-                <td>{student.phone}</td>
-                <td>{student.room?.number || "Not Assigned"}</td>
-                <td>
-                  <button 
-                    className="admin-btn" 
-                    onClick={() => handleEdit(student)}
-                  >
-                    <i className="bx bx-edit"></i>
-                  </button>
-                  <button 
-                    className="admin-btn delete-btn" 
-                    onClick={() => onDelete(student._id)}
-                  >
-                    <i className="bx bx-trash"></i>
-                  </button>
-                </td>
+          </thead>
+          <tbody>
+            {students.length === 0 ? (
+              <tr>
+                <td colSpan="10" style={{ textAlign: "center" }}>No students found</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ) : (
+              students.map((student) => (
+                <tr key={student._id}>
+                  <td>{student.fullName}</td>
+                  <td>{student.matricNumber}</td>
+                  <td>{student.email}</td>
+                  <td>{student.department}</td>
+                  <td>{student.level}</td>
+                  <td>{student.phone}</td>
+                  <td>{student.gender}</td>
+                  <td>{student.role}</td>
+                  <td>{student.allocationStatus}</td>
+                  <td>
+                    <button 
+                      className="admin-btn" 
+                      onClick={() => handleEdit(student)}
+                    >
+                      <i className="bx bx-edit"></i>
+                    </button>
+                    {/* Delete button can be implemented if needed */}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      )}
 
       {showModal && (
         <div className="modal">

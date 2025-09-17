@@ -42,6 +42,33 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Auth state: check if user is logged in
+  const [user, setUser] = useState(() => {
+    const raw = localStorage.getItem('user');
+    try {
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Listen for login/logout changes
+  useEffect(() => {
+    const onStorage = () => {
+      const raw = localStorage.getItem('user');
+      setUser(raw ? JSON.parse(raw) : null);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/');
+  };
+
   return (
     <header className="header">
       <div className="header-container">
@@ -69,47 +96,72 @@ const Header = () => {
           ref={menuRef}
         >
           <ul>
-            <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
-            <li><Link to="/hostels" onClick={() => setIsMenuOpen(false)}>Hostels</Link></li>
-            <li><Link to="/admin/*" onClick={() => setIsMenuOpen(false)}>Hoss</Link></li>
-            <li><Link to="/allocations" onClick={() => setIsMenuOpen(false)}>Allocations</Link></li>
-            <li><Link to="/profile" onClick={() => setIsMenuOpen(false)}>Profile</Link></li>
-
-            {/* Dropdown */}
-            <li 
-              className="dropdown" 
-              ref={dropdownRef}
-            >
-              <button 
-                className="dropdown-btn" 
-                onClick={toggleDropdown}
-                aria-expanded={showDropdown}
-              >
-                Login <span className="arrow">{showDropdown ? '▲' : '▼'}</span>
-              </button>
-              {showDropdown && (
-                <div className="dropdown-content">
-                  <Link 
-                    to="/student-login" 
-                    onClick={() => {
-                      setShowDropdown(false);
-                      setIsMenuOpen(false);
-                    }}
+            {!user ? (
+              <>
+                <li><Link to="/" onClick={() => setIsMenuOpen(false)}>Home</Link></li>
+                <li className="dropdown" ref={dropdownRef}>
+                  <button 
+                    className="dropdown-btn" 
+                    onClick={toggleDropdown}
+                    aria-expanded={showDropdown}
                   >
-                    Student Login
-                  </Link>
-                  <Link 
-                    to="/admin-login"
-                    onClick={() => {
-                      setShowDropdown(false);
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    Admin Login
-                  </Link>
-                </div>
-              )}
-            </li>
+                    Login <span className="arrow">{showDropdown ? '▲' : '▼'}</span>
+                  </button>
+                  {showDropdown && (
+                    <div className="dropdown-content">
+                      <Link 
+                        to="/student-login" 
+                        onClick={() => {
+                          setShowDropdown(false);
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        Student Login
+                      </Link>
+                      <Link 
+                        to="/admin-login"
+                        onClick={() => {
+                          setShowDropdown(false);
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        Admin Login
+                      </Link>
+                    </div>
+                  )}
+                </li>
+              </>
+            ) : (
+              <>
+                <li><Link to="/hostels" onClick={() => setIsMenuOpen(false)}>Hostels</Link></li>
+                <li><Link to="/allocations" onClick={() => setIsMenuOpen(false)}>Allocations</Link></li>
+                <li><Link to="/profile" onClick={() => setIsMenuOpen(false)}>Profile</Link></li>
+                {user && user.role === 'admin' ? (
+                  <li>
+                    <button className="logout-btn" onClick={handleLogout}>
+                      <i className="bx bx-log-out"></i> Logout
+                    </button>
+                  </li>
+                ) : (
+                  <li className="dropdown" ref={dropdownRef}>
+                    <button 
+                      className="dropdown-btn" 
+                      onClick={toggleDropdown}
+                      aria-expanded={showDropdown}
+                    >
+                      <i className="bx bx-user-circle"></i> Account <span className="arrow">{showDropdown ? '▲' : '▼'}</span>
+                    </button>
+                    {showDropdown && (
+                      <div className="dropdown-content">
+                        <button className="logout-btn" onClick={handleLogout} style={{width: '100%', textAlign: 'left', background: 'none', color: '#333', padding: '12px 16px', border: 'none'}}>
+                          <i className="bx bx-log-out"></i> Logout
+                        </button>
+                      </div>
+                    )}
+                  </li>
+                )}
+              </>
+            )}
           </ul>
         </nav>
       </div>

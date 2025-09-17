@@ -1,8 +1,10 @@
+
 import React, { useState, useMemo, useEffect } from "react";
 import "../../../styles/admin.css";
 import StatsCard from "../components/StatsCard";
 import Alert from "../../../component/Alert";
 import { adminApi } from "../../../utils/api";
+// AllocationTable removed, using inline table for pending allocations only
 
 const Dashboard = () => {
   const [allocationsData, setAllocationsData] = useState([]);
@@ -20,15 +22,14 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [statsRes, allocationsRes] = await Promise.all([
-          adminApi.getDashboardStats(),
-          adminApi.getAllocations(),
-        ]);
-
-        setStats(statsRes.data);
-        setAllocationsData(allocationsRes.data);
+        // Only fetch unallocated students now
+        const res = await adminApi.getUnallocatedStudents();
+        const arr = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        setAllocationsData(arr);
+        console.log('Fetched unallocated students:', arr);
         setLoading(false);
       } catch (err) {
+        console.error('Dashboard fetch error:', err);
         setAlert({
           open: true,
           type: "error",
@@ -43,13 +44,13 @@ const Dashboard = () => {
 
   // Filtering allocations
   const filteredAllocations = useMemo(() => {
-    return allocationsData.filter(
+    const arr = Array.isArray(allocationsData) ? allocationsData : [];
+    return arr.filter(
       (a) =>
-        (a.student.toLowerCase().includes(search.toLowerCase()) ||
-          a.regNo.toLowerCase().includes(search.toLowerCase())) &&
-        (filter === "all" || a.status === filter)
+        (a.fullName?.toLowerCase?.().includes(search.toLowerCase()) ||
+          a.matricNumber?.toLowerCase?.().includes(search.toLowerCase()))
     );
-  }, [allocationsData, search, filter]);
+  }, [allocationsData, search]);
 
   // Approve allocation
   const handleApprove = async (id, student) => {
@@ -135,37 +136,38 @@ const Dashboard = () => {
             <option value="Pending">Pending</option>
           </select>
         </div>
-
         <table className="admin-table">
           <thead>
             <tr>
               <th>S/N</th>
-              <th>Reg. No</th>
-              <th>Student Name</th>
-              <th>Room No</th>
-              <th>Capacity</th>
-              <th>Stay Duration</th>
+              <th>Student</th>
+              <th>Room</th>
+              <th>Session</th>
+              <th>Status</th>
+              <th>Allocated At</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {filteredAllocations.length === 0 ? (
+             {filteredAllocations.filter(a => a.status === "Pending").length === 0 ? (
               <tr>
                 <td colSpan={7} style={{ textAlign: "center" }}>
                   No records found.
                 </td>
               </tr>
             ) : (
-              filteredAllocations.map((a, idx) => (
-                <tr key={idx}>
-                  <td>{idx + 1}</td>
-                  <td>{a.regNo}</td>
-                  <td>{a.student}</td>
-                  <td>{a.room}</td>
-                  <td>{a.capacity}</td>
-                  <td>{a.duration}</td>
-                  <td>
-                    {a.status === "Pending" ? (
+               filteredAllocations
+                 .filter(a => a.status === "Pending")
+                .map((a, idx) => (
+                  <tr key={a._id}>
+                    <td>{idx + 1}</td>
+                    <td>{a.student}</td>
+                    <td>{a.room}</td>
+                    <td>{a.session}</td>
+                    <td style
+                    ={{ textTransform: 'capitalize' }}>{a.status}</td>
+                    <td>{a.appliedAt ? new Date(a.appliedAt).toLocaleString() : '-'}</td>
+                    <td>
                       <>
                         <button
                           className="admin-btn"
@@ -182,14 +184,9 @@ const Dashboard = () => {
                           Reject
                         </button>
                       </>
-                    ) : (
-                      <span style={{ color: "#27ae60", fontWeight: 600 }}>
-                        Approved
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))
+                    </td>
+                  </tr>
+                ))
             )}
           </tbody>
         </table>
