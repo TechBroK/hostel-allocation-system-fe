@@ -1,11 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/allocation.css';
 import RoomAvailability from '../../component/RoomAvailability';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
-import { studentApi, hostelApi, roomApi } from '../../utils/api';
+import { hostelApi, roomApi, studentApi, adminApi, allocationApi } from '../../utils/api';
 
 
 
@@ -15,6 +15,7 @@ const Allocation = () => {
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
+    email: '',
     matricNumber: '',
     department: '',
     level: '',
@@ -49,71 +50,74 @@ const Allocation = () => {
 
   
   const [hostels, setHostels] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [departments, setDepartments] = useState([]);
 
-  // Fetch hostels and user profile on component mount
   useEffect(() => {
-    const fetchData = async () => {
+    const loadHostels = async () => {
       try {
-        const [hostelsRes, profileRes] = await Promise.all([
-          hostelApi.getAllHostels(),
-          studentApi.getProfile()
-        ]);
-        // Defensive: support both { data: [...] } and [...]
-        const hostelList = Array.isArray(hostelsRes.data)
-          ? hostelsRes.data
-          : Array.isArray(hostelsRes.data.data)
-            ? hostelsRes.data.data
-            : [];
-  setHostels(hostelList);
-  console.log('Fetched hostels:', hostelList);
-
-        // Pre-fill form with user profile data
-        setFormData(prevData => ({
-          ...prevData,
-          fullName: profileRes.data.fullName,
-          matricNumber: profileRes.data.matricNumber,
-          department: profileRes.data.department,
-          level: profileRes.data.level,
-          gender: profileRes.data.gender,
-          phoneNumber: profileRes.data.phone,
-          email: profileRes.data.email
-        }));
-
-        setLoading(false);
+        const res = await hostelApi.getAllHostels();
+        const data = Array.isArray(res.data?.data) ? res.data.data : Array.isArray(res.data) ? res.data : [];
+        setHostels(data.map(h => ({ id: h._id || h.id, name: h.name, type: h.type, capacity: h.capacity, available: h.available ?? 0 })));
       } catch (err) {
-        setError(err.response?.data?.message || "Error loading data");
+        setError(err.response?.data?.message || 'Failed to load hostels');
+      } finally {
         setLoading(false);
       }
     };
-
-    fetchData();
+    loadHostels();
   }, []);
 
-  // Fetch rooms for selected hostel only
   useEffect(() => {
-    const fetchRoomsForHostel = async () => {
-      if (!selectedHostel) {
-        setRooms([]);
-        return;
-      }
+    const loadDepartments = async () => {
       try {
-        // Use /api/rooms/hostel/{hostelId}
-        const response = await roomApi.getRoomsByHostelId(selectedHostel);
-        const roomsArr = Array.isArray(response.data?.data)
-          ? response.data.data
-          : Array.isArray(response.data)
-            ? response.data
-            : [];
-        setRooms(roomsArr);
-      } catch (err) {
-        setError(err.response?.data?.message || "Error loading rooms");
+        const res = await adminApi.getDepartments();
+        const list = Array.isArray(res?.data?.data) ? res.data.data : Array.isArray(res?.data) ? res.data : [];
+        const names = list.map(d => (d.name || d.title || d)).filter(Boolean);
+        if (names.length) setDepartments(names);
+      } catch (_) {
+        // Fallback to a static list if endpoint is not accessible to students
+        setDepartments([
+          'Computer Science',
+          'Information Technology',
+          'Software Engineering',
+          'Electrical Engineering',
+          'Mechanical Engineering',
+          'Civil Engineering',
+          'Business Administration',
+          'Accounting',
+          'Economics',
+          'Biochemistry',
+          'Microbiology',
+          'Mass Communication'
+        ]);
       }
     };
-    fetchRoomsForHostel();
+    loadDepartments();
+  }, []);
+
+  useEffect(() => {
+    const loadRooms = async () => {
+      if (!selectedHostel) { setRooms([]); return; }
+      try {
+        const res = await roomApi.getRoomsByHostelId(selectedHostel);
+        const data = Array.isArray(res.data?.data) ? res.data.data : [];
+        setRooms(data.map(r => ({ id: r._id || r.id, number: r.roomNumber || r.number, type: r.type, capacity: r.capacity, occupied: r.occupied || 0 })));
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load rooms');
+        setRooms([]);
+      }
+    };
+    loadRooms();
   }, [selectedHostel]);
+
+  // Remove backend profile fetch, use static profile
+  // Pre-fill form with mock profile data (already set in initial formData state)
+
+  // Fetch rooms for selected hostel only
+  // Remove backend room fetch, use static rooms (could filter by hostel if desired)
 
   // Filter available rooms (not fully occupied)
   const availableRooms = Array.isArray(rooms)
@@ -163,42 +167,57 @@ if (formData.personalityTraits.hobbies.length < 1) {
       setFormErrors(errors);
       return;
     }
-
+    if (!selectedRoom?.id) {
+      setFormErrors({ submit: 'No room selected' });
+      return;
+    }
     try {
       setIsSubmitting(true);
-      
-      // Submit allocation request
-      await studentApi.requestAllocation({
-        roomId: selectedRoom.id,
-        hostelId: selectedHostel,
-        studentDetails: {
-          fullName: formData.fullName,
-          matricNumber: formData.matricNumber,
-          department: formData.department,
-          level: formData.level,
-          gender: formData.gender,
-          phoneNumber: formData.phoneNumber,
-          emergencyContact: formData.emergencyContact,
-          email: formData.email
-        },
-        healthInformation: {
-          conditions: formData.healthConditions,
-          specialRequests: formData.specialRequests
-        },
-        personalityProfile: formData.personalityTraits
-      });
-
-      // On success, navigate to profile page
+      const profilePayload = {
+        fullName: formData.fullName,
+        email: formData.email,
+        matricNumber: formData.matricNumber,
+        department: formData.department,
+        level: formData.level,
+        gender: formData.gender,
+        phone: formData.phoneNumber,
+        emergencyContact: formData.emergencyContact,
+        healthConditions: formData.healthConditions,
+        specialRequests: formData.specialRequests,
+      };
+      const traitsPayload = {
+        sleepSchedule: mapSleepSchedule(formData.personalityTraits.sleepSchedule),
+        studyHabits: mapStudyHabits(formData.personalityTraits.studyHabits),
+        cleanlinessLevel: mapCleanliness(formData.personalityTraits.cleanlinessLevel),
+        socialPreference: mapSocialPreference(formData.personalityTraits.socialPreference),
+        noisePreference: mapNoise(formData.personalityTraits.noisePreference),
+        hobbies: formData.personalityTraits.hobbies || [],
+        musicPreference: formData.personalityTraits.musicPreference || '',
+        visitorFrequency: mapVisitor(formData.personalityTraits.visitorFrequency)
+      };
+      const compactTraits = Object.fromEntries(Object.entries(traitsPayload).filter(([_,v]) => v !== '' && v !== undefined && !(Array.isArray(v) && v.length === 0)));
+  // Do not pass roomId to avoid auto-approval; keep allocation pending for admin.
+  await allocationApi.apply({ profile: profilePayload, personalityTraits: compactTraits });
       navigate('/profile');
-    } catch (error) {
-      console.error('Submission error:', error);
-      setFormErrors({ 
-        submit: error.response?.data?.message || 'Failed to submit application' 
-      });
+    } catch (err) {
+      setFormErrors({ submit: err.response?.data?.message || 'Failed to submit allocation' });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // Map UI labels to backend enums
+  const mapSleepSchedule = (v) => v === 'Early Bird (Before 10PM)' ? 'early' : v === 'Night Owl (After 10PM)' ? 'late' : v ? 'flexible' : '';
+  const mapStudyHabits = (v) => v === 'In Room' ? 'quiet' : v === 'Study Groups' ? 'group' : v ? 'mixed' : '';
+  const mapCleanliness = (v) => {
+    if (!v) return 3;
+    if (v === 'Very Organized') return 5;
+    if (v === 'Moderately Tidy') return 3;
+    return 2;
+  };
+  const mapSocialPreference = (v) => v === 'Very Social' ? 'extrovert' : v === 'Moderately Social' ? 'balanced' : v ? 'introvert' : '';
+  const mapNoise = (v) => v === 'Prefer Quiet' ? 'quiet' : v === 'Moderate Noise OK' ? 'tolerant' : v ? 'noisy' : '';
+  const mapVisitor = (v) => v === 'Rarely' ? 'rarely' : v === 'Occasionally' ? 'sometimes' : v ? 'often' : '';
 
   return (
    <>
@@ -320,13 +339,17 @@ if (formData.personalityTraits.hobbies.length < 1) {
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="department">Department</label>
-                <input
-                  type="text"
+                <select
                   id="department"
                   value={formData.department}
-                  onChange={(e) => setFormData({...formData, department: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                   required
-                />
+                >
+                  <option value="">Select Department</option>
+                  {departments.map(dep => (
+                    <option key={dep} value={dep}>{dep}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">
@@ -345,6 +368,24 @@ if (formData.personalityTraits.hobbies.length < 1) {
                   <option value="500">500 Level</option>
                 </select>
               </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="gender">Gender</label>
+              <select
+                id="gender"
+                value={formData.gender}
+                onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                className={formErrors.gender ? 'error' : ''}
+                required
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+              {formErrors.gender && (
+                <span className="error-message">{formErrors.gender}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -374,6 +415,9 @@ if (formData.personalityTraits.hobbies.length < 1) {
                 onChange={(e) => setFormData({...formData, emergencyContact: e.target.value})}
                 required
               />
+              {formErrors.emergencyContact && (
+                <span className="error-message">{formErrors.emergencyContact}</span>
+              )}
             </div>
 
             <div className="form-group">

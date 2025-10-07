@@ -229,6 +229,103 @@
   padding: 1rem 0;
 }
 
+/* Personality & Preferences — improved UI */
+.personality-summary {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1rem 1.5rem;
+  align-items: start;
+}
+
+.personality-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.6rem;
+}
+
+.trait-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d3a4a;
+  background: #eef5ff;
+  border: 1px solid #e0ecff;
+}
+.trait-pill i { color: #3498db; }
+
+/* Variants by value (subtle background accents) */
+.trait-pill.early { background: #eaf7ff; }
+.trait-pill.late { background: #fff1e6; }
+.trait-pill.flexible { background: #f2f7f2; }
+.trait-pill.quiet { background: #eef7ff; }
+.trait-pill.mixed { background: #f6f0ff; }
+.trait-pill.group { background: #fff8e6; }
+.trait-pill.introvert { background: #f2f7f7; }
+.trait-pill.balanced { background: #f4f7ff; }
+.trait-pill.extrovert { background: #fff0f3; }
+.trait-pill.tolerant { background: #fff8e6; }
+.trait-pill.noisy { background: #ffecec; }
+.trait-pill.rarely { background: #f2fff3; }
+.trait-pill.sometimes { background: #fffbe6; }
+.trait-pill.often { background: #fff1f1; }
+
+.cleanliness-card {
+  background: #ffffff;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.cleanliness-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #48627d;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+.cleanliness-meter {
+  height: 10px;
+  border-radius: 999px;
+  background: #eef2f7;
+  overflow: hidden;
+}
+.cleanliness-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8bc34a, #27ae60);
+}
+.cleanliness-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #7a8aa0;
+  margin-top: 0.35rem;
+}
+
+.personality-divider {
+  border-top: 1px dashed #e3e9f2;
+  margin: 1rem 0 1.2rem;
+}
+
+.personality-edit-title {
+  color: #48627d;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.personality-form-grid label { color: #48627d; font-size: 0.92rem; }
+.personality-form-grid select,
+.personality-form-grid input { margin-top: 0.25rem; }
+
+@media (max-width: 700px) {
+  .personality-summary { grid-template-columns: 1fr; }
+}
+
 .mbti-badge {
   display: inline-block;
   background: #3498db;

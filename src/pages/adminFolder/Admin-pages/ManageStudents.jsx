@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "../../../styles/admin.css";
-import Sidebar from "../components/Sidebar";
-import Topbar from "../components/topbar";
 import StudentTable from "../components/StudentTable";
 import { adminApi } from "../../../utils/api";
 
@@ -10,20 +8,23 @@ const ManageStudents = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  // const [selectedStudent, setSelectedStudent] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [departments, setDepartments] = useState([]);
   // Removed newStudentId, backend will generate _id
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await adminApi.getStudents();
-        // Support paginated response: students in response.data.items
-        const studentsArr = Array.isArray(response.data?.items)
-          ? response.data.items
-          : Array.isArray(response.data)
-            ? response.data
-            : [];
+        const response = await adminApi.getStudents({ page: 1, limit: 50 });
+        // Support paginated response
+        const studentsArr = Array.isArray(response.data?.data)
+          ? response.data.data
+          : Array.isArray(response.data?.items)
+            ? response.data.items
+            : Array.isArray(response.data)
+              ? response.data
+              : [];
         setStudents(studentsArr);
         setLoading(false);
       } catch (err) {
@@ -31,15 +32,28 @@ const ManageStudents = () => {
         setLoading(false);
       }
     };
+    const fetchDepartments = async () => {
+      try {
+        const res = await adminApi.getDepartments();
+        const items = Array.isArray(res.data?.items) ? res.data.items : [];
+        setDepartments(items);
+      } catch (_) { /* no-op */ }
+    };
 
     fetchStudents();
+    fetchDepartments();
   }, []);
 
   // Add Student now uses PUT /api/admin/students/{studentId} (updateStudentStatus)
   const handleAdd = async (newStudent) => {
     try {
       // Remove id/_id, let backend generate ObjectId
-      const { id, _id, ...studentData } = newStudent;
+      const { id, _id, department, phone, ...rest } = newStudent;
+      const studentData = {
+        ...rest,
+        department: (department || '').trim() || undefined,
+        phone: phone || undefined
+      };
       console.log('Add Student request payload:', studentData);
       const response = await adminApi.addStudent(studentData);
       const createdStudent = response.data?.item || response.data;
@@ -55,10 +69,9 @@ const ManageStudents = () => {
       const response = await adminApi.updateStudent(studentId, updatedData);
       setStudents(prev =>
         prev.map(student =>
-          student._id === studentId ? response.data : student
+          (student._id === studentId || student.id === studentId) ? response.data : student
         )
       );
-      setSelectedStudent(null);
     } catch (err) {
       setError(err.response?.data?.message || "Error updating student");
     }
@@ -69,7 +82,7 @@ const ManageStudents = () => {
     
     try {
       await adminApi.deleteStudent(studentId);
-      setStudents(prev => prev.filter(student => student._id !== studentId));
+      setStudents(prev => prev.filter(student => (student._id || student.id) !== studentId));
     } catch (err) {
       setError(err.response?.data?.message || "Error deleting student");
     }
@@ -78,7 +91,6 @@ const ManageStudents = () => {
 
   return (
     <div className="flex">
-      <Sidebar />
       <div className="flex-1">
         {/* Only render Topbar once at the top-level layout, not inside nested components */}
         <div className="admin-main">
@@ -162,7 +174,12 @@ const ManageStudents = () => {
                   </div>
                   <div className="form-group">
                     <label>Department:</label>
-                    <input type="text" name="department" required />
+                    <select name="department" required defaultValue="">
+                      <option value="" disabled>Select Department</option>
+                      {departments.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="form-group">
                     <label>Level:</label>

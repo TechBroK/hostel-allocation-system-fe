@@ -1,7 +1,5 @@
 
 import React, { useState, useEffect } from "react";
-import Sidebar from "../components/Sidebar";
-import Topbar from "../components/topbar";
 import HostelTable from "../components/HostelTable";
 import { adminApi } from "../../../utils/api";
 import "../../../styles/admin.css";
@@ -73,8 +71,9 @@ const ManageHostels = () => {
         maintenance: Number(newHostel.maintenance) || 0,
         rooms: newHostel.rooms
       };
-      const response = await adminApi.addHostel(hostelToAdd);
-      setHostels(prev => [...prev, response.data]);
+  const response = await adminApi.addHostel(hostelToAdd);
+  const created = response.data?.data || response.data;
+  setHostels(prev => [...prev, created]);
       setShowAddHostelModal(false);
       setNewHostel({
         name: '',
@@ -102,7 +101,6 @@ const ManageHostels = () => {
 
   return (
     <div className="flex">
-      <Sidebar />
       <div className="flex-1">
 
         <div className="p-6 admin-section">
@@ -116,7 +114,11 @@ const ManageHostels = () => {
           <button className="add-hostel-btn" onClick={() => setShowAddHostelModal(true)}>
             <i className="fi fi-rr-plus"></i> Add Hostel
           </button>
-          <HostelTable hostels={hostels} />
+          {loading ? (
+            <div className="loading">Loading hostels...</div>
+          ) : (
+            <HostelTable hostels={hostels} />
+          )}
           {showAddHostelModal && (
             <div className="modal">
               <div className="modal-content">
@@ -141,7 +143,7 @@ const ManageHostels = () => {
                       <option value="">Select Type</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
-                      <option value="mixed">Mixed</option>
+                      {/* Backend supports only male/female */}
                     </select>
                   </div>
                   <div className="form-group">
@@ -175,7 +177,7 @@ const ManageHostels = () => {
                   {/* Add Room Section */}
                   <div className="form-group" style={{ border: '1px solid #eee', padding: 10, marginBottom: 10 }}>
                     <label style={{ fontWeight: 'bold' }}>Add Room(s):</label>
-                    <form onSubmit={handleAddRoom} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                       <input
                         type="text"
                         placeholder="Room Number"
@@ -212,8 +214,8 @@ const ManageHostels = () => {
                         required
                         style={{ width: 70 }}
                       />
-                      <button type="submit" style={{ padding: '2px 8px' }}>Add Room</button>
-                    </form>
+                      <button onClick={handleAddRoom} type="button" style={{ padding: '2px 8px' }}>Add Room</button>
+                    </div>
                     {/* List of added rooms */}
                     {Array.isArray(newHostel.rooms) && newHostel.rooms.length > 0 && (
                       <div style={{ marginTop: 8 }}>

@@ -36,9 +36,9 @@
  
 }
 .admin-main {
-  margin-left: 70px;
   min-height: 100vh;
-  width:900px;
+  margin-left: 20px;
+  width:100%;
 }
 
 /* ===== Sidebar ===== */
@@ -85,6 +85,25 @@
   color: #fff;
 }
 
+/* Collapsed state for mobile */
+.sidebar.hidden {
+  transform: translateX(-100%);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
 /* ===== Topbar ===== */
 .topbar {
   background: #fff;
@@ -99,9 +118,44 @@
 }
 
 .topbar .admin-name {
-  font-weight: 600;
+  font-weight: 700;
   color: #3498db;
   font-size: 1.1rem;
+}
+
+/* Hamburger and overlay */
+.hamburger-btn {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 110;
+  width: 36px;
+  height: 36px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #2980b9;
+  border: none;
+  border-radius: 6px;
+  padding: 4px;
+}
+.hamburger-btn.show { display: flex; }
+
+.hamburger-btn span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #fff;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 90;
+  display: none;
 }
 
 /* ===== Stats Cards ===== */
@@ -266,19 +320,19 @@
   .admin-dashboard-flex {
     flex-direction: column;
   }
+  .hamburger-btn { display: flex; }
   .sidebar {
-    position: static;
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    align-items: center;
-    padding: 0.5rem;
-    box-shadow: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 240px;
+    transform: translateX(0);
+    transition: transform 0.2s ease-in-out;
+    box-shadow: 2px 0 8px rgba(105, 164, 203, 0.07);
   }
-  .sidebar nav {
-    flex-direction: row;
-    gap: 0.5rem;
-  }
+  .sidebar nav { flex-direction: column; gap: 0.75rem; }
+  .sidebar-overlay { display: block; }
   .admin-main {
     margin-left: 0;
     padding: 0.5rem;
@@ -303,4 +357,47 @@
     padding: 1.5rem 1rem;
     width: 90%;
   }
+}
+
+/* ===== Mobile Hamburger Sidebar (overrides) ===== */
+.sidebar.hidden { transform: translateX(-100%); }
+
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; }
+.sidebar-close { background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+
+.hamburger-btn {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 110;
+  width: 36px;
+  height: 36px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #2980b9;
+  border: none;
+  border-radius: 6px;
+  padding: 4px;
+}
+.hamburger-btn span { display: block; width: 20px; height: 2px; background: #fff; }
+
+.sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 90; display: none; }
+
+@media (max-width: 700px) {
+  .hamburger-btn { display: flex; }
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    width: 240px;
+    transform: translateX(0);
+    transition: transform 0.2s ease-in-out;
+    box-shadow: 2px 0 8px rgba(105, 164, 203, 0.07);
+  }
+  .sidebar nav { flex-direction: column; gap: 0.75rem; }
+  .sidebar-overlay { display: block; }
+  .admin-main { margin-left: 0; padding: 0.5rem; }
 }

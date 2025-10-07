@@ -1,7 +1,5 @@
 
 import React, { useState } from "react";
-import Sidebar from "../components/Sidebar";
-import Topbar from "../components/topbar";
 import { adminApi } from "../../../utils/api";
 import "../../../styles/admin.css";
 
@@ -51,8 +49,7 @@ const Reports = () => {
 
   return (
     <div className="flex">
-      <Sidebar />
-      <div className="flex-1 ml-64">
+      <div className="flex-1">
         <div className="admin-section p-6">
           <h2 className="text-2xl font-bold mb-4">Reports</h2>
           <p>Download and view allocation and hostel reports here.</p>

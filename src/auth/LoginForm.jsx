@@ -52,25 +52,12 @@ const LoginForm = () => {
 
   const handleForgot = async (e) => {
     e.preventDefault();
-    try {
-      await authApi.forgotPassword(forgotEmail);
-      setForgotAlert({ 
-        open: true, 
-        type: "success", 
-        message: "Password reset link sent! Check your email." 
-      });
-      // Reset form and show login after 3 seconds
-      setForgotEmail("");
-      setTimeout(() => {
-        setShowForgot(false);
-      }, 3000);
-    } catch (err) {
-      setForgotAlert({ 
-        open: true, 
-        type: "error", 
-        message: err.response?.data?.message || "Error sending reset link." 
-      });
-    }
+    // Backend forgot-password not implemented; show informational message
+    setForgotAlert({
+      open: true,
+      type: "info",
+      message: "Contact admin to reset your password."
+    });
   };
 
   return (

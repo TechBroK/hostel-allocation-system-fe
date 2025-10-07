@@ -1,12 +1,11 @@
-import axios from "axios";
+// Deprecated module: use `adminApi` from `src/utils/api.js` instead.
+// This module remains only for backward compatibility and will be removed.
+// If any old code calls these functions, they will warn/throw to highlight migration.
 
-const API = axios.create({ baseURL: "http://localhost:8080/api/admin" });
+export function fetchStudents() {
+  console.warn('[DEPRECATED] src/services/adminApi.js.fetchStudents is deprecated. Use adminApi.getStudents from src/utils/api.js');
+  throw new Error('Deprecated: Use adminApi from src/utils/api.js');
+}
 
-export const fetchStudents = async () => {
-  const { data } = await API.get("/students");
-  // Support paginated response: students in data.items
-  return Array.isArray(data?.items) ? data.items : (Array.isArray(data) ? data : []);
-};
-// Deprecated: Use adminApi from ../utils/api.js for all admin API calls
-// All admin API calls should be made via the centralized adminApi object in ../utils/api.js
-// This file is now redundant and can be removed in the future.
+// No default export to discourage imports
+export default undefined;

@@ -6,7 +6,7 @@ import Alert from '../../component/Alert';
 import Header from '../../component/header';
 import RoomDetailsModal from '../../component/RoomDetailsModal';
 import Footer from '../../component/footer';
-import { hostelApi, studentApi, roomApi } from '../../utils/api';
+import { hostelApi, roomApi } from '../../utils/api';
 
 const Hostel = () => {
   const [rooms, setRooms] = useState([]);
@@ -15,24 +15,9 @@ const Hostel = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
   const [error, setError] = useState(null);
-  const [showAddRoomModal, setShowAddRoomModal] = useState(false);
-  const [showAddHostelModal, setShowAddHostelModal] = useState(false);
+  // Admin-only creation flows removed from public hostel page
   const [showRoomDetailsModal, setShowRoomDetailsModal] = useState(false);
-  const [newHostel, setNewHostel] = useState({
-    name: '',
-    description: '',
-    totalRooms: 0,
-    occupiedRooms: 0,
-    availableRooms: 0,
-    maintenanceRooms: 0,
-  });
-  const [newRoom, setNewRoom] = useState({
-    number: '',
-    capacity: 4,
-    type: 'Standard',
-    occupied: 0,
-    occupants: []
-  });
+  // Form states for admin add hostel/room removed
   const [hostels, setHostels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [setAlert] = useState({ open: false, type: "info", message: "" });
@@ -82,106 +67,13 @@ const Hostel = () => {
     }
   };
 
-  const handleAddRoom = async (e) => {
-    e.preventDefault();
-    try {
-      const hostel = hostels.find(h => (h._id || h.id) === selectedHostel);
-      if (!hostel) throw new Error('Hostel not found');
-      // Generate a room number based on timestamp for uniqueness
-      const roomNumber = `R${Date.now().toString().slice(-5)}`;
-      const roomToAdd = {
-        hostelId: selectedHostel,
-        number: roomNumber,
-        capacity: parseInt(newRoom.capacity),
-        type: newRoom.type,
-        floor: Math.ceil((hostel.totalRooms + 1) / 10)
-      };
-      // Add room through API
-      await roomApi.addRoom(roomToAdd);
-      // Fetch updated hostel data to reflect new room counts and rooms
-      const updatedHostel = await hostelApi.getHostelDetails(hostel._id || hostel.id);
-      setHostels(prevHostels =>
-        prevHostels.map(h => (h._id || h.id) === (hostel._id || hostel.id) ? updatedHostel.data : h)
-      );
-      // Update rooms state from updatedHostel if available
-      setRooms(Array.isArray(updatedHostel.data.rooms) ? updatedHostel.data.rooms : []);
-      setShowAddRoomModal(false);
-      setNewRoom({
-        number: '',
-        capacity: 4,
-        type: 'Standard',
-        occupied: 0,
-        occupants: []
-      });
-    } catch (err) {
-      setError(err.response?.data?.message || err.message || "Error adding room");
-    }
-  };
+  // Room creation is handled in the Admin panel
 
-  const validateHostel = (hostelData) => {
-    const errors = {};
-    if (!hostelData.name) errors.name = 'Name is required';
-    if (!hostelData.totalRooms) errors.totalRooms = 'Total rooms is required';
-    if (hostelData.totalRooms < 1) errors.totalRooms = 'Must have at least 1 room';
-    return errors;
-  };
-
-  const handleAddHostel = async (e) => {
-    e.preventDefault();
-    try {
-      const errors = validateHostel(newHostel);
-      if (Object.keys(errors).length > 0) {
-        setError('Please fix the form errors');
-        return;
-      }
-      
-      const hostelToAdd = {
-        ...newHostel,
-        availableRooms: Number(newHostel.totalRooms)
-      };
-
-      // Add hostel through API
-      const response = await hostelApi.addHostel(hostelToAdd);
-      
-      // Update local state
-      setHostels(prev => [...prev, response.data]);
-      
-      setShowAddHostelModal(false);
-      setNewHostel({
-        name: '',
-        description: '',
-        totalRooms: 0,
-        occupiedRooms: 0,
-        availableRooms: 0,
-        maintenanceRooms: 0,
-      });
-    } catch (err) {
-      setError(err.response?.data?.message || "Error adding hostel");
-    }
-  };
+  // Hostel creation is handled in the Admin panel
 
   const handleRoomSelection = async (room) => {
-    if (!window.confirm(`Are you sure you want to select Room ${room.number || room.roomNumber}?`)) {
-      return;
-    }
-
-    try {
-      // Fetch full room details from API
-      const response = await roomApi.getRoomDetails(room.id);
-      const fullRoom = response.data;
-      // Create allocation request through API using the full room id
-      await studentApi.requestAllocation({ roomId: fullRoom.id });
-      setSelectedForAllocation(fullRoom);
-      setAlert({
-        open: true,
-        type: "success",
-        message: "Room allocation request submitted successfully!"
-      });
-      // Immediately redirect to Allocation.jsx (allocations page)
-      navigate('/allocations');
-    } catch (err) {
-      setError(err.response?.data?.message || "Error requesting room allocation");
-    }
+    // Send user to the Allocation form where they can submit their details; no API call here.
+    navigate('/allocations');
   };
 
   const filteredRooms = React.useMemo(() => {

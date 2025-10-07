@@ -1,20 +1,25 @@
-
 import React, { useState, useEffect } from "react";
 import { adminApi } from "../../../utils/api";
 import "../../../styles/admin.css";
 
-const StudentTable = () => {
-  const [students, setStudents] = useState([]);
+const StudentTable = ({ students: externalStudents = [], onEdit, onDelete }) => {
+  const [students, setStudents] = useState(externalStudents);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [editFormData, setEditFormData] = useState({});
+  const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
+    if (externalStudents && externalStudents.length) {
+      setStudents(externalStudents);
+      setLoading(false);
+      return;
+    }
     const fetchStudents = async () => {
       try {
-        const response = await adminApi.getStudents();
+        const response = await adminApi.getStudents({ page: 1, limit: 50 });
         // Support paginated response: students in response.data.data or response.data.items
         const studentsArr = Array.isArray(response.data?.data)
           ? response.data.data
@@ -31,25 +36,48 @@ const StudentTable = () => {
       }
     };
     fetchStudents();
+  }, [externalStudents]);
+
+  useEffect(() => {
+    const loadDepartments = async () => {
+      try {
+        const res = await adminApi.getDepartments();
+        const items = Array.isArray(res.data?.items) ? res.data.items : [];
+        setDepartments(items);
+      } catch (_) {
+        // ignore; keep input usable if dropdown fails
+      }
+    };
+    loadDepartments();
   }, []);
 
   const handleEdit = (student) => {
     setSelectedStudent(student);
     setEditFormData({
-      fullName: student.fullName,
-      email: student.email,
-      matricNumber: student.matricNumber,
-      department: student.department,
-      level: student.level,
-      phone: student.phone
+      fullName: student.fullName || "",
+      email: student.email || "",
+      matricNumber: student.matricNumber || "",
+      department: student.department || "",
+      level: student.level || "",
+      phone: student.phone || ""
     });
     setShowModal(true);
   };
 
-  const handleSubmitEdit = (e) => {
+  const handleSubmitEdit = async (e) => {
     e.preventDefault();
-    // You may want to implement update logic here
-    setShowModal(false);
+    if (!selectedStudent) return;
+    try {
+      const id = selectedStudent._id || selectedStudent.id;
+      const payload = { ...editFormData };
+      const res = await adminApi.updateStudent(id, payload);
+      const updated = res.data;
+      setStudents(prev => prev.map(s => (s._id === id || s.id === id) ? updated : s));
+      setShowModal(false);
+      setSelectedStudent(null);
+    } catch (err) {
+      setError(err.response?.data?.message || "Error updating student");
+    }
   };
 
   return (
@@ -82,7 +110,7 @@ const StudentTable = () => {
               </tr>
             ) : (
               students.map((student) => (
-                <tr key={student._id}>
+                <tr key={student._id || student.id}>
                   <td>{student.fullName}</td>
                   <td>{student.matricNumber}</td>
                   <td>{student.email}</td>
@@ -91,7 +119,7 @@ const StudentTable = () => {
                   <td>{student.phone}</td>
                   <td>{student.gender}</td>
                   <td>{student.role}</td>
-                  <td>{student.allocationStatus}</td>
+                  <td>{student.allocationStatus || student.status}</td>
                   <td>
                     <button 
                       className="admin-btn" 
@@ -99,7 +127,11 @@ const StudentTable = () => {
                     >
                       <i className="bx bx-edit"></i>
                     </button>
-                    {/* Delete button can be implemented if needed */}
+                    {onDelete && (
+                      <button className="admin-btn danger" onClick={() => onDelete(student._id || student.id)}>
+                        <i className="bx bx-trash"></i>
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
@@ -151,15 +183,29 @@ const StudentTable = () => {
               </div>
               <div className="form-group">
                 <label>Department:</label>
-                <input
-                  type="text"
-                  value={editFormData.department}
-                  onChange={(e) => setEditFormData({
-                    ...editFormData,
-                    department: e.target.value
-                  })}
-                  required
-                />
+                {departments.length > 0 ? (
+                  <select
+                    value={editFormData.department || ''}
+                    onChange={(e) => setEditFormData({
+                      ...editFormData,
+                      department: e.target.value
+                    })}
+                  >
+                    <option value="">Select Department</option>
+                    {departments.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={editFormData.department}
+                    onChange={(e) => setEditFormData({
+                      ...editFormData,
+                      department: e.target.value
+                    })}
+                  />
+                )}
               </div>
               <div className="form-group">
                 <label>Level:</label>
@@ -169,7 +215,6 @@ const StudentTable = () => {
                     ...editFormData,
                     level: e.target.value
                   })}
-                  required
                 >
                   <option value="">Select Level</option>
                   <option value="100">100</option>
@@ -188,7 +233,6 @@ const StudentTable = () => {
                     ...editFormData,
                     phone: e.target.value
                   })}
-                  required
                 />
               </div>
               <div className="modal-actions">

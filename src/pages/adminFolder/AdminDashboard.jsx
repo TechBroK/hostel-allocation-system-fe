@@ -6,8 +6,8 @@ import Topbar from "./components/topbar";
 import Dashboard from "./Admin-pages/Dashboard";
 import ManageStudents from "./Admin-pages/ManageStudents";
 import ManageHostels from "./Admin-pages/ManageHostels";
-import AllocationControl from "./Admin-pages/AllocationControl";
 import Reports from "./Admin-pages/Reports";
+import Complaints from "./Admin-pages/Complaints.jsx";
 import AuthForm from "../../auth/AuthForm";
 import Alert from "../../component/Alert";
 import "../../styles/admin.css";
@@ -42,8 +42,8 @@ const AdminDashboard = () => {
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/students" element={<ManageStudents />} />
-        <Route path="hostels" element={<ManageHostels />} />
-        <Route path="allocation" element={<AllocationControl />} />
+    <Route path="hostels" element={<ManageHostels />} />
+  <Route path="complaints" element={<Complaints />} />
         <Route path="reports" element={<Reports />} />
         <Route path="login" element={<AuthForm userType="admin" />} />
       </Routes>

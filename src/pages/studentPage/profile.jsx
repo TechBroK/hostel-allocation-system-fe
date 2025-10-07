@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./../../styles/profile.css";
 import Alert from "../../component/Alert";
 import "../../styles/alert.css";
@@ -19,99 +19,102 @@ const Profile = () => {
   const [complaintDesc, setComplaintDesc] = useState("");
   const [alert, setAlert] = useState({ open: false, type: "info", message: "" });
 
+  // Load profile and complaints for current user
   useEffect(() => {
-    const fetchData = async () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const studentId = user?._id || user?.id;
+    if (!studentId) { setLoading(false); return; }
+    const load = async () => {
       try {
-        // Get user from localStorage
-        const userRaw = localStorage.getItem('user');
-        console.log('userRaw from localStorage:', userRaw);
-        const user = userRaw ? JSON.parse(userRaw) : null;
-        console.log('Parsed user:', user);
-        if (!user || !user._id) throw new Error('User not found');
-        console.log('Using user._id:', user._id);
-        // Fetch profile using studentApi
-        const profileRes = await studentApi.getProfile(user._id);
-        console.log('Profile response:', profileRes);
-        // Fetch complaints for this user
-        let complaintsRes = { data: [] };
-        complaintsRes = await studentApi.getComplaints(user._id);
-        // Support new backend structure: { personal: {...}, allocation: {...} }
-        let userProfile = profileRes.data;
-        if (userProfile && userProfile.personal) {
-          // Map personality traits to display-friendly format
-          let personality = null;
-          if (userProfile.personal.personalityTraits) {
-            const traitsObj = userProfile.personal.personalityTraits;
-            personality = {
-              type: 'Custom',
-              traits: Object.entries(traitsObj).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`),
-              bio: '',
-            };
-          }
-          userProfile = {
-            // Use correct property names from backend
-            _id: userProfile.personal._id,
-            name: userProfile.personal.fullName || userProfile.personal.name || '',
-            regNumber: userProfile.personal.matricNumber || userProfile.personal.regNumber || '',
-            email: userProfile.personal.email || '',
-            phone: userProfile.personal.phone || '',
-            gender: userProfile.personal.gender || '',
-            level: userProfile.personal.level || '',
-            department: userProfile.personal.department || '',
-            profilePic: userProfile.personal.profilePic || '',
-            // Allocation fields
-            allocationStatus: userProfile.allocation?.status || 'Not Applied',
-            hostel: userProfile.allocation?.hostel || 'Not Allocated',
-            hostelId: userProfile.allocation?.hostelId,
-            roomNumber: userProfile.allocation?.roomNumber || 'Not Assigned',
-            applicationDate: userProfile.allocation?.allocatedAt,
-            personality,
-          };
-        }
-        setProfileData(userProfile);
-        setComplaints(complaintsRes.data);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error loading profile data:', err);
-        setAlert({
-          open: true,
-          type: "error",
-          message: "Error loading profile data"
+        const [prof, comps] = await Promise.all([
+          studentApi.getProfile(studentId),
+          studentApi.getComplaints(studentId)
+        ]);
+  const p = prof?.data || {};
+  const personal = p.personal || {};
+        const alloc = p.allocation || null;
+        setProfileData({
+          _id: personal._id || personal.id,
+          name: personal.fullName || personal.name || '-',
+          regNumber: personal.matricNumber || '-',
+          email: personal.email || '-',
+          phone: personal.phone || '-',
+          gender: personal.gender || '-',
+          level: personal.level || '-',
+          department: personal.department || '-',
+          profilePic: personal.profilePic || personal.avatarUrl || '',
+          allocationStatus: alloc?.status ? (alloc.status === 'approved' ? 'Allocated' : alloc.status) : 'Pending',
+          hostel: alloc?.hostel || '',
+          hostelId: alloc?.hostelId || '',
+          roomNumber: alloc?.roomNumber || '',
+          applicationDate: alloc?.allocatedAt ? String(alloc.allocatedAt).slice(0,10) : '',
+          personality: {
+            type: 'Custom',
+            traits: Array.isArray(personal.personalityTraits?.hobbies) ? personal.personalityTraits.hobbies : [],
+            bio: ''
+          },
+          roommate: '-',
+          roommateMatch: null
         });
+        // Preload saved personality traits into the form if available
+        const traitsServer = personal.personalityTraits || {};
+        setTraitsDraft({
+          sleepSchedule: traitsServer.sleepSchedule || '',
+          studyHabits: traitsServer.studyHabits || '',
+          cleanlinessLevel: Number(traitsServer.cleanlinessLevel ?? 3),
+          socialPreference: traitsServer.socialPreference || '',
+          noisePreference: traitsServer.noisePreference || '',
+          hobbies: Array.isArray(traitsServer.hobbies)
+            ? traitsServer.hobbies
+            : (typeof traitsServer.hobbies === 'string'
+              ? traitsServer.hobbies.split(',').map(s => s.trim()).filter(Boolean)
+              : []),
+          musicPreference: traitsServer.musicPreference || '',
+          visitorFrequency: traitsServer.visitorFrequency || ''
+        });
+        const arr = Array.isArray(comps?.data?.data) ? comps.data.data : Array.isArray(comps?.data) ? comps.data : [];
+        setComplaints(arr.map(c => ({ id: c._id || c.id, type: c.type || 'Other', description: c.description || c.message, status: c.status || 'Open', date: c.createdAt ? new Date(c.createdAt).toISOString().slice(0,10) : '' })));
+      } catch (err) {
+        setAlert({ open: true, type: 'error', message: err.response?.data?.message || 'Failed to load profile' });
+      } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    load();
   }, []);
 
   const handleEdit = () => {
     setIsEditing(true);
     setEditedData(profileData);
+    // Link personality editor to the main Edit button
+    setShowPrefEditor(true);
   };
 
   const handleSave = async () => {
     try {
-      // Use studentApi.updateProfile with the user's ID
-      await studentApi.updateProfile(profileData._id, editedData);
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const studentId = user?._id || user?.id;
+      if (!studentId) throw new Error('No user');
+      await studentApi.updateProfile(studentId, {
+        fullName: editedData?.name,
+        phone: editedData?.phone,
+        level: editedData?.level
+      });
       setProfileData(editedData);
       setIsEditing(false);
-      setAlert({ 
-        open: true, 
-        type: "success", 
-        message: "Profile updated successfully!" 
-      });
+      // Close personality editor when profile editing ends
+      setShowPrefEditor(false);
+      setAlert({ open: true, type: 'success', message: 'Profile updated successfully!' });
     } catch (err) {
-      setAlert({
-        open: true,
-        type: "error",
-        message: err.response?.data?.message || "Error updating profile"
-      });
+      setAlert({ open: true, type: 'error', message: err.response?.data?.message || 'Failed to update profile' });
     }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setEditedData(profileData);
+    // Close personality editor on cancel
+    setShowPrefEditor(false);
   };
 
   const handleChange = (field, value) => {
@@ -121,42 +124,78 @@ const Profile = () => {
     }));
   };
 
-  const handleAvatarChange = (e) => {
-    // Handle avatar change logic
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const studentId = user?._id || user?.id;
+      const formData = new FormData();
+      formData.append('avatar', file);
+      await studentApi.uploadAvatar(studentId, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      // Optimistically update preview
+      const url = URL.createObjectURL(file);
+      setProfileData(prev => ({ ...prev, profilePic: url }));
+      setAlert({ open: true, type: 'success', message: 'Avatar uploaded' });
+    } catch (err) {
+      setAlert({ open: true, type: 'error', message: err.response?.data?.message || 'Failed to upload avatar' });
+    }
+  };
+
+  const [traitsDraft, setTraitsDraft] = useState({
+    sleepSchedule: '',
+    studyHabits: '',
+    cleanlinessLevel: 3,
+    socialPreference: '',
+    noisePreference: '',
+    hobbies: [],
+    musicPreference: '',
+    visitorFrequency: ''
+  });
+  // Show the personality editor only on first load; hide after save/cancel
+  const [showPrefEditor, setShowPrefEditor] = useState(true);
+
+  const savePersonality = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const studentId = user?._id || user?.id;
+      await studentApi.updatePersonality(studentId, { personalityTraits: traitsDraft });
+      // Reflect saved traits immediately in UI (tags + card)
+      setProfileData(prev => ({
+        ...prev,
+        personality: {
+          ...(prev?.personality || { type: 'Custom', bio: '' }),
+          traits: Array.isArray(traitsDraft.hobbies) ? traitsDraft.hobbies : []
+        }
+      }));
+      setAlert({ open: true, type: 'success', message: 'Personality saved' });
+      // Auto-close editor after saving
+      setShowPrefEditor(false);
+    } catch (err) {
+      setAlert({ open: true, type: 'error', message: err.response?.data?.message || 'Failed to save personality' });
+    }
   };
 
   const handleSubmitComplaint = async () => {
     if (!complaintType || !complaintDesc) {
-      setAlert({ 
-        open: true, 
-        type: "error", 
-        message: "Please select a type and enter a description." 
-      });
+      setAlert({ open: true, type: 'error', message: 'Please select a type and enter a description.' });
       return;
     }
-
     try {
-      // Submit complaint for the current user
-      const response = await studentApi.submitComplaint(profileData._id, {
-        type: complaintType,
-        description: complaintDesc
-      });
-
-      setComplaints(prev => [...prev, response.data]);
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const studentId = user?._id || user?.id;
+      if (!studentId) throw new Error('No user');
+      // Backend expects { type, description }
+      await studentApi.submitComplaint(studentId, { type: complaintType, description: complaintDesc });
+      const comps = await studentApi.getComplaints(studentId);
+      const arr = Array.isArray(comps?.data?.data) ? comps.data.data : Array.isArray(comps?.data) ? comps.data : [];
+      setComplaints(arr.map(c => ({ id: c._id || c.id, type: c.type || 'Other', description: c.description || c.message, status: c.status || 'Open', date: c.createdAt ? new Date(c.createdAt).toISOString().slice(0,10) : '' })));
       setShowComplaintForm(false);
-      setComplaintType("");
-      setComplaintDesc("");
-      setAlert({ 
-        open: true, 
-        type: "success", 
-        message: "Complaint submitted successfully!" 
-      });
+      setComplaintType('');
+      setComplaintDesc('');
+      setAlert({ open: true, type: 'success', message: 'Complaint submitted successfully!' });
     } catch (err) {
-      setAlert({
-        open: true,
-        type: "error",
-        message: err.response?.data?.message || "Error submitting complaint"
-      });
+      setAlert({ open: true, type: 'error', message: err.response?.data?.message || 'Failed to submit complaint' });
     }
   };
 
@@ -246,16 +285,7 @@ const Profile = () => {
                 <div className="profile-dashboard-info-grid">
                   <div>
                     <strong>Email:</strong>
-                    {isEditing ? (
-                      <input
-                        type="email"
-                        value={editedData?.email || ''}
-                        onChange={(e) => handleChange('email', e.target.value)}
-                        className="edit-input"
-                      />
-                    ) : (
-                      <span>{profileData.email}</span>
-                    )}
+                    <span>{profileData.email}</span>
                   </div>
                   <div>
                     <strong>Phone:</strong>
@@ -311,19 +341,124 @@ const Profile = () => {
 
               {profileData.personality && (
                 <div className="profile-dashboard-section">
-                  <h3>Personality & Preferences</h3>
+                  <div className="section-header">
+                    <h3>Personality & Preferences</h3>
+                  </div>
                   <div className="personality-content">
-                    <div className="mbti-badge">{profileData.personality.type}</div>
-                    <div className="traits-tags">
-                      {profileData.personality.traits?.map(trait => (
-                        <span key={trait} className="trait-tag">
-                          <i className="fi fi-rr-star"></i> {trait}
+                    {/* Summary snapshot */}
+                    <div className="personality-summary">
+                      <div className="personality-grid">
+                        {/* Sleep schedule */}
+                        <span className={`trait-pill ${traitsDraft.sleepSchedule || ''}`}>
+                          <i className="fi fi-rr-moon-stars"></i>
+                          Sleep: {traitsDraft.sleepSchedule || '—'}
                         </span>
-                      ))}
+                        {/* Study habits */}
+                        <span className={`trait-pill ${traitsDraft.studyHabits || ''}`}>
+                          <i className="fi fi-rr-book-alt"></i>
+                          Study: {traitsDraft.studyHabits || '—'}
+                        </span>
+                        {/* Social preference */}
+                        <span className={`trait-pill ${traitsDraft.socialPreference || ''}`}>
+                          <i className="fi fi-rr-users-alt"></i>
+                          Social: {traitsDraft.socialPreference || '—'}
+                        </span>
+                        {/* Noise preference */}
+                        <span className={`trait-pill ${traitsDraft.noisePreference || ''}`}>
+                          <i className="fi fi-rr-volume"></i>
+                          Noise: {traitsDraft.noisePreference || '—'}
+                        </span>
+                        {/* Visitors */}
+                        <span className={`trait-pill ${traitsDraft.visitorFrequency || ''}`}>
+                          <i className="fi fi-rr-calendar"></i>
+                          Visitors: {traitsDraft.visitorFrequency || '—'}
+                        </span>
+                        {/* Hobbies (first 3 as tags) */}
+                        {(traitsDraft.hobbies || []).slice(0,3).map(h => (
+                          <span key={h} className="trait-pill">
+                            <i className="fi fi-rr-star"></i> {h}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="cleanliness-card">
+                        <div className="cleanliness-title">
+                          <i className="fi fi-rr-broom"></i>
+                          Cleanliness Level
+                        </div>
+                        <div className="cleanliness-meter">
+                          <div className="cleanliness-fill" style={{ width: `${Math.min(100, Math.max(0, (Number(traitsDraft.cleanlinessLevel)||0) * 20))}%` }}></div>
+                        </div>
+                        <div className="cleanliness-scale">
+                          <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                        </div>
+                      </div>
                     </div>
-                    <p className="bio-text">
-                      <i className="fi fi-rr-quote-right"></i> {profileData.personality.bio}
-                    </p>
+
+                    {(showPrefEditor || isEditing) && (
+                      <>
+                        <div className="personality-divider"></div>
+                        <div className="personality-edit-title">Update your preferences</div>
+                        <div className="personality-form-grid">
+                      <label>Sleep Schedule
+                        <select value={traitsDraft.sleepSchedule} onChange={(e)=>setTraitsDraft({...traitsDraft, sleepSchedule: e.target.value})}>
+                          <option value="">Select</option>
+                          <option value="early">Early</option>
+                          <option value="flexible">Flexible</option>
+                          <option value="late">Late</option>
+                        </select>
+                      </label>
+                      <label>Study Habits
+                        <select value={traitsDraft.studyHabits} onChange={(e)=>setTraitsDraft({...traitsDraft, studyHabits: e.target.value})}>
+                          <option value="">Select</option>
+                          <option value="quiet">Quiet</option>
+                          <option value="mixed">Mixed</option>
+                          <option value="group">Group</option>
+                        </select>
+                      </label>
+                      <label>Cleanliness (1-5)
+                        <input type="number" min="1" max="5" value={traitsDraft.cleanlinessLevel} onChange={(e)=>setTraitsDraft({...traitsDraft, cleanlinessLevel: Number(e.target.value)})} />
+                      </label>
+                      <label>Social Preference
+                        <select value={traitsDraft.socialPreference} onChange={(e)=>setTraitsDraft({...traitsDraft, socialPreference: e.target.value})}>
+                          <option value="">Select</option>
+                          <option value="introvert">Introvert</option>
+                          <option value="balanced">Balanced</option>
+                          <option value="extrovert">Extrovert</option>
+                        </select>
+                      </label>
+                      <label>Noise Preference
+                        <select value={traitsDraft.noisePreference} onChange={(e)=>setTraitsDraft({...traitsDraft, noisePreference: e.target.value})}>
+                          <option value="">Select</option>
+                          <option value="quiet">Quiet</option>
+                          <option value="tolerant">Tolerant</option>
+                          <option value="noisy">Noisy</option>
+                        </select>
+                      </label>
+                      <label>Hobbies (comma separated)
+                        <input type="text" value={traitsDraft.hobbies.join(', ')} onChange={(e)=>setTraitsDraft({...traitsDraft, hobbies: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} />
+                      </label>
+                      <label>Music Preference
+                        <input type="text" value={traitsDraft.musicPreference} onChange={(e)=>setTraitsDraft({...traitsDraft, musicPreference: e.target.value})} />
+                      </label>
+                      <label>Visitor Frequency
+                        <select value={traitsDraft.visitorFrequency} onChange={(e)=>setTraitsDraft({...traitsDraft, visitorFrequency: e.target.value})}>
+                          <option value="">Select</option>
+                          <option value="rarely">Rarely</option>
+                          <option value="sometimes">Sometimes</option>
+                          <option value="often">Often</option>
+                        </select>
+                      </label>
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                          <button className="save-btn" onClick={savePersonality}>
+                            <i className="fi fi-rr-check"></i> Save Personality
+                          </button>
+                          <button className="cancel-btn" onClick={() => setShowPrefEditor(false)}>
+                            <i className="fi fi-rr-cross"></i> Cancel
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}
