@@ -196,8 +196,9 @@ if (formData.personalityTraits.hobbies.length < 1) {
         visitorFrequency: mapVisitor(formData.personalityTraits.visitorFrequency)
       };
       const compactTraits = Object.fromEntries(Object.entries(traitsPayload).filter(([_,v]) => v !== '' && v !== undefined && !(Array.isArray(v) && v.length === 0)));
-  // Do not pass roomId to avoid auto-approval; keep allocation pending for admin.
-  await allocationApi.apply({ profile: profilePayload, personalityTraits: compactTraits });
+    // Include preferred roomId so the student's requested room is recorded.
+    // The backend will keep the allocation 'pending' (no auto-approval).
+  await allocationApi.apply({ profile: profilePayload, personalityTraits: compactTraits, roomId: selectedRoom.id });
       navigate('/profile');
     } catch (err) {
       setFormErrors({ submit: err.response?.data?.message || 'Failed to submit allocation' });

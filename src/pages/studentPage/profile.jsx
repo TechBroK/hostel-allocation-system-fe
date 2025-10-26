@@ -74,6 +74,13 @@ const Profile = () => {
         });
         const arr = Array.isArray(comps?.data?.data) ? comps.data.data : Array.isArray(comps?.data) ? comps.data : [];
         setComplaints(arr.map(c => ({ id: c._id || c.id, type: c.type || 'Other', description: c.description || c.message, status: c.status || 'Open', date: c.createdAt ? new Date(c.createdAt).toISOString().slice(0,10) : '' })));
+        // Decide whether to auto-open the preferences editor only on the first load for this student
+        try {
+          const shown = localStorage.getItem(`prefEditorShown:${personal._id || personal.id}`);
+          setShowPrefEditor(!shown);
+        } catch (e) {
+          setShowPrefEditor(false);
+        }
       } catch (err) {
         setAlert({ open: true, type: 'error', message: err.response?.data?.message || 'Failed to load profile' });
       } finally {
@@ -85,9 +92,14 @@ const Profile = () => {
 
   const handleEdit = () => {
     setIsEditing(true);
-    setEditedData(profileData);
-    // Link personality editor to the main Edit button
-    setShowPrefEditor(true);
+    // Deep clone to avoid accidental mutation of profileData
+    try {
+      setEditedData(JSON.parse(JSON.stringify(profileData)));
+    } catch (e) {
+      setEditedData(Object.assign({}, profileData));
+    }
+    // Open preference editor if it hasn't been auto-shown for this user yet
+    setShowPrefEditor(prev => prev || true);
   };
 
   const handleSave = async () => {
@@ -147,20 +159,20 @@ const Profile = () => {
     studyHabits: '',
     cleanlinessLevel: 3,
     socialPreference: '',
-    noisePreference: '',
+     noisePreference: '',
     hobbies: [],
     musicPreference: '',
     visitorFrequency: ''
   });
   // Show the personality editor only on first load; hide after save/cancel
-  const [showPrefEditor, setShowPrefEditor] = useState(true);
+  const [showPrefEditor, setShowPrefEditor] = useState(false);
 
   const savePersonality = async () => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const studentId = user?._id || user?.id;
       await studentApi.updatePersonality(studentId, { personalityTraits: traitsDraft });
-      // Reflect saved traits immediately in UI (tags + card)
+      // Reflect saved traits immediately i
       setProfileData(prev => ({
         ...prev,
         personality: {
@@ -171,6 +183,14 @@ const Profile = () => {
       setAlert({ open: true, type: 'success', message: 'Personality saved' });
       // Auto-close editor after saving
       setShowPrefEditor(false);
+      // Mark that the pref editor has been shown for this user so it only auto-opens once
+      try {
+        if (studentId) {
+          localStorage.setItem(`prefEditorShown:${studentId}`, '1');
+        }
+      } catch (e) {
+        // ignore localStorage errors
+      }
     } catch (err) {
       setAlert({ open: true, type: 'error', message: err.response?.data?.message || 'Failed to save personality' });
     }
