@@ -55,14 +55,13 @@
 }
 
 body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  min-width: 0;
 }
 
 .container {
   position: relative;
-  margin: 20px;
+  width: min(920px, calc(100% - 2rem));
+  margin: 20px auto;
   height: 400px;
   background: lavenderblush;
   border-radius: 30px;
@@ -126,6 +125,7 @@ form {
   font-size: 18px;
   color: #333;
   font-weight: 400;
+  max-width: 100%;
 }
 
 .input-box input::placeholder {
@@ -147,10 +147,14 @@ form {
   margin: -10px 0 15px;
 }
 
-.forgot-link a {
+.forgot-link a,
+.forgot-link button {
   font-size: 14.5px;
   color: #333;
   text-decoration: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 
 /* Buttons */
@@ -178,8 +182,11 @@ form {
   justify-content: center;
 }
 
-.social-icons a {
+.social-icons a,
+.social-icons button {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 5px;
   border: 2px solid rgb(57, 57, 214);
   border-radius: 9px;
@@ -187,6 +194,10 @@ form {
   margin: 0 8px;
   color: rgb(35, 24, 195);
   text-decoration: none;
+  background: transparent;
+  min-width: 40px;
+  min-height: 40px;
+  cursor: pointer;
 }
 
 /* Toggle Box */
@@ -271,13 +282,17 @@ form {
 /* Responsive */
 @media screen and (max-width: 650px) {
   .container {
-    height: 100vh;
+    width: min(100% - 1rem, 440px);
+    min-height: 720px;
+    height: auto;
+    border-radius: 20px;
   }
 
   .form-box {
     bottom: 0;
-    width: 90%;
+    width: 100%;
     height: 72%;
+    padding: 32px 16px;
   }
 
   .container.active .form-box {
@@ -301,6 +316,8 @@ form {
   .toggle-panel {
     width: 100%;
     height: 27%;
+    padding: 1rem;
+    text-align: center;
   }
 
   .toggle-panel.toggle-left {
@@ -324,14 +341,33 @@ form {
   .toggle-panel img {
     height: 0;
   }
+
+  .input-box.input-box-flex {
+    gap: 10px;
+  }
+
+  .matric-input {
+    min-width: 0;
+    margin-left: 0;
+  }
 }
 
 @media screen and (max-width: 400px) {
   .form-box {
-    padding: 20px;
+    padding: 20px 12px;
   }
 
   .toggle-panel h1 {
     font-size: 30px;
+  }
+
+  .input-box.input-box-flex {
+    flex-direction: column;
+  }
+
+  .matric-input,
+  .level-dropdown {
+    width: 80%;
+    max-width: none;
   }
 }

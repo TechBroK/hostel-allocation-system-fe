@@ -1,10 +1,10 @@
 .profile-container {
-  max-width: 650px;
+  width: min(650px, calc(100% - 2rem));
   margin: 2rem auto;
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 2px 12px rgba(52,152,219,0.08);
-  padding: 2.5rem 2rem;
+  padding: clamp(1rem, 3vw, 2.5rem);
   font-family: 'Segoe UI', Arial, sans-serif;
 }
 
@@ -15,6 +15,7 @@
   border-bottom: 1px solid #eaeaea;
   padding-bottom: 1.5rem;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .profile-header-top {
@@ -22,6 +23,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .profile-avatar-wrapper {
@@ -119,12 +121,12 @@
 }
 
 .profile-dashboard {
-  max-width: 900px;
+  width: min(900px, calc(100% - 2rem));
   margin: 2.5rem auto;
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 2px 12px rgba(52,152,219,0.08);
-  padding: 2.5rem 2rem;
+  padding: clamp(1rem, 3vw, 2.5rem);
   font-family: 'Segoe UI', Arial, sans-serif;
 }
 
@@ -135,6 +137,7 @@
   border-bottom: 1px solid #eaeaea;
   padding-bottom: 1.5rem;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .profile-dashboard-header h2 {
@@ -195,7 +198,7 @@
 }
 
 .profile-dashboard-section {
-  flex: 1 1 350px;
+  flex: 1 1 min(350px, 100%);
   background: #f8f9fa;
   border-radius: 12px;
   padding: 1.5rem 1.2rem;
@@ -239,7 +242,7 @@
 
 .personality-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
   gap: 0.6rem;
 }
 
@@ -453,6 +456,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+  flex-wrap: wrap;
   margin-top: 2rem;
   padding-top: 1rem;
   border-top: 1px solid #eee;
@@ -538,6 +542,7 @@ textarea.complaint-input {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .complaints-list {
@@ -618,6 +623,16 @@ textarea.complaint-input {
 }
 
 @media (max-width: 768px) {
+  .profile-header,
+  .profile-dashboard-header {
+    align-items: flex-start;
+  }
+
+  .profile-info-grid,
+  .profile-dashboard-info-grid {
+    grid-template-columns: 1fr;
+  }
+
   .traits-tags {
     justify-content: center;
   }
@@ -633,6 +648,31 @@ textarea.complaint-input {
   }
   
   .new-complaint-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .profile-container,
+  .profile-dashboard {
+    width: min(calc(100% - 1rem), 900px);
+    margin: 1rem auto;
+    border-radius: 12px;
+  }
+
+  .profile-header h2,
+  .profile-dashboard-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .edit-actions,
+  .complaint-form-actions {
+    flex-direction: column;
+  }
+
+  .cancel-btn,
+  .save-btn {
     width: 100%;
     justify-content: center;
   }

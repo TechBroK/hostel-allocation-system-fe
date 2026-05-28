@@ -1,5 +1,5 @@
 .hostel-container {
-  padding: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
   background-color: #f8f9fa;
   min-height: 100vh;
 }
@@ -51,7 +51,7 @@
 
 .rooms-section {
   background: white;
-  padding: 2rem;
+  padding: clamp(1rem, 3vw, 2rem);
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -63,7 +63,7 @@
 
 .rooms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Reduced from 250px */
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
   gap: 1rem; /* Reduced from 1.5rem */
 }
 
@@ -142,9 +142,9 @@
 
 .hostels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  padding: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+  padding: clamp(0rem, 2vw, 2rem);
 }
 
 
@@ -176,6 +176,8 @@
 .hostel-stats {
   display: flex;
   justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .hostel-stats span {
@@ -190,6 +192,7 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .back-btn {
@@ -259,10 +262,12 @@
   gap: 1rem;
   margin-bottom: 2rem;
   padding: 0 2rem;
+  flex-wrap: wrap;
 }
 
 .search-box {
   flex: 1;
+  min-width: min(240px, 100%);
   display: flex;
   align-items: center;
   background: white;
@@ -291,6 +296,7 @@
   font-size: 1rem;
   cursor: pointer;
   background: white;
+  width: 100%;
 }
 
 .hostels-header {
@@ -298,6 +304,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .add-hostel-btn {
@@ -337,6 +345,8 @@
   border-radius: 8px;
   width: 90%;
   max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-header {
@@ -459,5 +469,25 @@
   .add-room-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .stats-grid,
+  .rooms-grid,
+  .hostels-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rooms-controls,
+  .search-filter-container,
+  .hostels-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .room-card-actions,
+  .modal-actions {
+    flex-direction: column;
   }
 }
