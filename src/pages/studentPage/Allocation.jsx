@@ -5,7 +5,7 @@ import '../../styles/allocation.css';
 import RoomAvailability from '../../component/RoomAvailability';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
-import { hostelApi, roomApi, studentApi, adminApi, allocationApi } from '../../utils/api';
+import { hostelApi, roomApi, adminApi, allocationApi } from '../../utils/api';
 
 
 
@@ -51,8 +51,8 @@ const Allocation = () => {
   
   const [hostels, setHostels] = useState([]);
   const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [, setLoading] = useState(true);
+  const [, setError] = useState(null);
   const [departments, setDepartments] = useState([]);
 
   useEffect(() => {

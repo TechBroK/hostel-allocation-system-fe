@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/hostel.css';
-import Alert from '../../component/Alert';
 import Header from '../../component/header';
 import RoomDetailsModal from '../../component/RoomDetailsModal';
 import Footer from '../../component/footer';
@@ -16,11 +15,8 @@ const Hostel = () => {
   const [filter, setFilter] = useState('all');
   const [error, setError] = useState(null);
   // Admin-only creation flows removed from public hostel page
-  const [showRoomDetailsModal, setShowRoomDetailsModal] = useState(false);
   // Form states for admin add hostel/room removed
   const [hostels, setHostels] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [setAlert] = useState({ open: false, type: "info", message: "" });
 
   useEffect(() => {
     const fetchHostels = async () => {
@@ -33,15 +29,13 @@ const Hostel = () => {
             ? response.data
             : [];
         setHostels(hostelsData);
-        setLoading(false);
       } catch (err) {
         setError(err.response?.data?.message || "Error loading hostels");
-        setLoading(false);
       }
     };
     fetchHostels();
   }, []);
-  const [selectedForAllocation, setSelectedForAllocation] = useState(null);
+  const [selectedForAllocation] = useState(null);
   const navigate = useNavigate();
 
   // Use rooms from the selected hostel object (no extra API call needed)
@@ -203,7 +197,6 @@ const Hostel = () => {
                           className="view-details-btn"
                           onClick={() => {
                             setSelectedRoom(room);
-                            setShowRoomDetailsModal(true);
                           }}
                         >
                           <i className="fi fi-rr-eye"></i>

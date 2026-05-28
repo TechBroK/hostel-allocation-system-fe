@@ -88,9 +88,9 @@ const LoginForm = () => {
             <i className="bx bxs-lock-alt"></i>
           </div>
           <div className="forgot-link">
-            <a type="button" className="link-btn" onClick={() => setShowForgot(true)}>
+            <button type="button" className="link-btn" onClick={() => setShowForgot(true)}>
               Forgot Password?
-            </a>
+            </button>
           </div>
           <button type="submit" className="btn">LogIn</button>
           <Alert
@@ -102,10 +102,10 @@ const LoginForm = () => {
           />
           <p>or login with social platforms.</p>
           <div className="social-icons">
-            <a href="#"><i className="bx bxl-google"></i></a>
-            <a href="#"><i className="bx bxl-facebook"></i></a>
-            <a href="#"><i className="bx bxl-github"></i></a>
-            <a href="#"><i className="bx bxl-linkedin"></i></a>
+            <button type="button" aria-label="Continue with Google"><i className="bx bxl-google"></i></button>
+            <button type="button" aria-label="Continue with Facebook"><i className="bx bxl-facebook"></i></button>
+            <button type="button" aria-label="Continue with GitHub"><i className="bx bxl-github"></i></button>
+            <button type="button" aria-label="Continue with LinkedIn"><i className="bx bxl-linkedin"></i></button>
           </div>
         </form>
       ) : (

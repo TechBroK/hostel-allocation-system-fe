@@ -24,7 +24,7 @@ const RegisterForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await authApi.register(formData);
+      await authApi.register(formData);
       setAlert({ 
         open: true, 
         type: "success", 

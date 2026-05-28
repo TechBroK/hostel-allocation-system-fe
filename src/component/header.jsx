@@ -18,11 +18,6 @@ const Header = () => {
     setIsMenuOpen((prev) => !prev);
   };
 
-  const handleNavigation = (path) => {
-    navigate(path);
-    setIsMenuOpen(false); // Close menu after navigation
-  };
-
   // Close dropdown and menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {

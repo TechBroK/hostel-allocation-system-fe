@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { adminApi, studentApi } from '../../../utils/api';
 import '../../../styles/admin.css';
 
